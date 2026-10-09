@@ -31,5 +31,4 @@ flowchart TB
     O --> P(["Завершення успішно"])
 
     linkStyle default stroke:#E1BEE7,fill:none
-```<img width="1071" height="844" alt="image" src="https://github.com/user-attachments/assets/4d5c61b0-1a8f-4074-bb7d-29741ca3daf8" />
-<img width="1205" height="720" alt="image" src="https://github.com/user-attachments/assets/54528e2a-db69-4d2f-9225-9971283b6aeb" />
+```
