@@ -1,3 +1,5 @@
+# Activity Diagram UC-09 «Розділити витрату»
+
 ```mermaid
 ---
 config:
@@ -6,7 +8,8 @@ config:
   themeVariables:
     fontFamily: "'Merriweather Variable', serif"
   look: handDrawn
----                                                                                                                                                                                                                                                 flowchart TB
+---
+flowchart TB
     A(["Початок"]) --> B["1. Обрати витрату"]
     B --> C["2. Переглянути суму та список учасників"]
     C --> D["3. Обрати залучених учасників з списку"]
@@ -35,4 +38,4 @@ config:
     linkStyle 10 stroke:#E1BEE7,fill:none
     linkStyle 11 stroke:#E1BEE7,fill:none
     linkStyle 12 stroke:#E1BEE7,fill:none
-    linkStyle 13 stroke:#E1BEE7,fill:none
+    linkStyle 13 stroke:#E1BEE7,fill:none                                                                                                                                                                                            
