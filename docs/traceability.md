@@ -15,4 +15,4 @@ RTM збирає зв'язки, які вже з'явилися в попере�
 | FR-09 Зареєструвати спільну витрату | UC-05 Зареєструвати витрату | AC-09 Витрата збережена й видна в обліку події | Use Case Diagram; Activity UC-05; Class Diagram (Expense) |
 | FR-10 Відхиляти витрату із сумою ≤ 0 або нечисловою | UC-05 Зареєструвати витрату | AC-10 Витрата не зберігається, система повідомляє причину | Activity UC-05; Class Diagram (Expense) |
 | FR-11 Розподілити витрату порівну | UC-09 Розподілити витрату | AC-11 Сума часток дорівнює сумі витрати | Use Case Diagram; Activity UC-09; Class Diagram (Expense, ExpenseShare) |
-| FR-12 Показати баланс учасника | UC-06 Переглянути баланс | AC-12 Баланси узгоджуються з зареєстрованими витратами | Use Case Diagram; Class Diagram (Event, Expense, ExpenseShare) |
+| FR-12 Показати заборгованість | UC-06 Переглянути заборгованість | AC-12 Баланси узгоджуються з зареєстрованими витратами | Use Case Diagram; Class Diagram (Event, Expense, ExpenseShare) |
