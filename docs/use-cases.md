@@ -32,6 +32,9 @@
  
 Activity Diagram: [model/activity-uc-02.md](../model/activity-uc-02.md)
 
+![Activity Diagram UC-09](images/ad_02.svg)
+
+
 ## UC-05 «Зареєструвати витрату»
  
 | Поле | Опис |
