@@ -84,6 +84,6 @@ Activity Diagram: [model/activity-uc-07.md](../model/activity-uc-07.md)
 | Пов'язані вимоги | FR-11, NFR-02; UC-06 враховує зміни |
 | Критерії приймання | AC-11 |
 | Додатковий Use Case | — |
- [Activity Diagram UC-09](images/activity-uc-09.svg)
+ [Activity Diagram UC-09](images/ad_09.svg)
 Activity Diagram: [model/activity-uc-09.md](../model/activity-uc-09.md)
  
