@@ -53,6 +53,8 @@ Activity Diagram: [model/activity-uc-02.md](../model/activity-uc-02.md)
  
 Activity Diagram: [model/activity-uc-05.md](../model/activity-uc-05.md)
 
+![Activity Diagram UC-09](images/UC5.svg)
+
  ## UC-07 «Створити подію»
  
 | Поле | Опис |
@@ -71,6 +73,7 @@ Activity Diagram: [model/activity-uc-05.md](../model/activity-uc-05.md)
  
 Activity Diagram: [model/activity-uc-07.md](../model/activity-uc-07.md)
 
+![Activity Diagram UC-09](images/UC7.svg)
  
 ## UC-09 «Розподілити витрату»
  
