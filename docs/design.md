@@ -41,7 +41,7 @@ Activity Diagram деталізує перебіг сценарію: послі�
 
 Пов'язані вимоги: FR-01, FR-03, FR-07–FR-12, NFR-02, NFR-05.
 
-![Діаграма класів v1.0](images/class_diagram.svg)
+![Діаграма класів v1.0](images/classdiagram.svg)
 
 ### Пояснення сутностей
 
