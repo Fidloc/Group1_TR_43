@@ -4,7 +4,7 @@
 
 **Пов'язані вимоги:** FR-03, FR-04
 
-![Activity Diagram UC-07](../images/uc-07-activity.png)
+![Activity Diagram UC-07](../docs/images/uc-07-activity.png)
 
 | Крок специфікації UC-07 | Елемент Activity Diagram |
 |---|---|
