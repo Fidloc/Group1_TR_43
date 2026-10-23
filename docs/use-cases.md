@@ -73,7 +73,7 @@ Activity Diagram: [model/activity-uc-05.md](../model/activity-uc-05.md)
  
 Activity Diagram: [model/activity-uc-07.md](../model/activity-uc-07.md)
 
-![Activity Diagram UC-09](images/UC7.svg)
+![Activity Diagram UC-09](images/uc-07-activity.png)
  
 ## UC-09 «Розподілити витрату»
  
