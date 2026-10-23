@@ -4,7 +4,7 @@
 
 **Пов'язані вимоги:** FR-01, FR-02
 
-![Activity Diagram UC-02](../docs/images/uc-02-activity.png)
+![Activity Diagram UC-02](../docs/images/uc-02-activity.jpg)
 
 | Крок специфікації UC-02 | Елемент Activity Diagram |
 |---|---|
