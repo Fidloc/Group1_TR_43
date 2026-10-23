@@ -1,6 +1,8 @@
 # Activity Diagram UC-05 «Зареєструвати витрату»
 
-Діаграма показує, як учасник додає спільну витрату до події і де система може її відхилити: некоректна сума або скасування дії. Розподіл витрати між учасниками виконується окремо в UC-09. Пов'язані вимоги: FR-09, FR-10.
+Діаграма показує, як учасник додає спільну витрату до події і де система може її відхилити: некоректна сума або скасування дії. Розподіл витрати між учасниками виконується окремо в UC-09. 
+
+**Пов'язані вимоги:** FR-09, FR-10, FR-15
 
 ```mermaid
 flowchart TB
@@ -43,22 +45,7 @@ flowchart TB
     classDef endErr fill:#fff,stroke:#000,stroke-width:3px,color:#000
     classDef endOk fill:#fff,stroke:#16a34a,stroke-width:3px,color:#000
 
-    linkStyle 0 stroke:#E1BEE7,fill:none
-    linkStyle 1 stroke:#E1BEE7,fill:none
-    linkStyle 2 stroke:#E1BEE7,fill:none
-    linkStyle 3 stroke:#E1BEE7,fill:none
-    linkStyle 4 stroke:#E1BEE7,fill:none
-    linkStyle 5 stroke:#E1BEE7,fill:none
-    linkStyle 6 stroke:#E1BEE7,fill:none
-    linkStyle 7 stroke:#E1BEE7,fill:none
-    linkStyle 8 stroke:#E1BEE7,fill:none
-    linkStyle 9 stroke:#E1BEE7,fill:none
-    linkStyle 10 stroke:#E1BEE7,fill:none
-    linkStyle 11 stroke:#E1BEE7,fill:none
-    linkStyle 12 stroke:#E1BEE7,fill:none
-    linkStyle 13 stroke:#E1BEE7,fill:none
-    linkStyle 14 stroke:#E1BEE7,fill:none
-    linkStyle 15 stroke:#E1BEE7
+    linkStyle default stroke:#E1BEE7,fill:none
 ```
 
 | Крок специфікації | Елемент діаграми |
