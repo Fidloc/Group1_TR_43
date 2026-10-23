@@ -57,7 +57,7 @@ Activity Diagram: [model/activity-uc-02.md](../model/activity-uc-02.md)
  
 Activity Diagram: [model/activity-uc-05.md](../model/activity-uc-05.md)
 
-![Activity Diagram UC-09](images/uc-05-activity.svg)
+![Activity Diagram UC-09](images/uc-05-activity.png)
 
  ## UC-07 «Створити подію»
  
