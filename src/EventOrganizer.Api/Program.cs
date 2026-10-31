@@ -1,41 +1,38 @@
-var builder = WebApplication.CreateBuilder(args);
+using System.Text.Json;
+using EventOrganizer.Api.Contracts;
+using EventOrganizer.Api.Models;
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+var builder = WebApplication.CreateBuilder(args);
+builder.Services.ConfigureHttpJsonOptions(o =>
+    o.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase);
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+app.Use(async (context, next) =>
 {
-    app.MapOpenApi();
-}
+    try
+    {
+        await next(context);
+    }
+    catch (BadHttpRequestException)
+    {
+        context.Response.StatusCode = 400;
+        await context.Response.WriteAsJsonAsync(new ApiError("invalid_request", "Некоректний запит."));
+    }
+});
 
-app.UseHttpsRedirection();
+// Спільні колекції в пам'яті сервера (v1.0)
+var gate = new object();
+var users = new List<User>();
+var events = new List<Event>();
+var participations = new List<Participation>();
+var expenses = new List<Expense>();
+var shares = new List<ExpenseShare>();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+// --- Сюди учасники додають свої маршрути (UC-01/02, UC-07, UC-05, UC-09) ---
 
 app.Run();
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
+public partial class Program { }
