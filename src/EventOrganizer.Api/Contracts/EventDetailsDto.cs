@@ -1,6 +1,5 @@
 namespace EventOrganizer.Api.Contracts;
 
-// Сторінка події. Status: Created | Closed | Cancelled.
 public sealed record EventDetailsDto(
     int Id,
     string Title,
