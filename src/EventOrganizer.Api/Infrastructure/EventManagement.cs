@@ -9,7 +9,7 @@ public static class EventManagement
 {
     public const int InviteCodeLength = 8;
     
-    // UC-07: створення
+    // UC-07
     
     public static bool TryReadCreate(JsonElement body, out CreateEventRequest? request, out string? code)
     {
@@ -86,7 +86,7 @@ public static class EventManagement
         return null;
     }
 
-    // UC-04: приєднання
+    // UC-04
 
     public static bool TryReadJoin(JsonElement body, out JoinEventRequest? request)
     {
@@ -133,7 +133,7 @@ public static class EventManagement
         return null;
     }
 
-    // UC-10 / UC-11: закриття і скасування
+    // UC-10 UC-11
 
     public static bool TryReadUserId(JsonElement body, out int userId)
     {
@@ -165,7 +165,7 @@ public static class EventManagement
         return null;
     }
 
-    // UC-03: перегляд
+    // UC-03
 
     public static EventDetailsDto ToDetails(Event ev, IEnumerable<Participation> participations)
     {
