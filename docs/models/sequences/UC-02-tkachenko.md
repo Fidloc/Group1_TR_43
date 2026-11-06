@@ -1,6 +1,6 @@
 # Діаграма послідовності UC-01 «Зареєструватися» та UC-02 «Увійти до системи»
 
-Діаграма побудована за фактичним кодом v1.0: клієнтська частина — Razor Page `Pages/Index.cshtml` (`IndexModel.OnPostRegisterAsync`, `IndexModel.OnPostLoginAsync`), серверна частина — маршрути `POST /api/users/register` та `POST /api/users/login` у `Program.cs` і колекція `users` у пам'яті.
+Діаграма де клієнтська частина — Razor Page `Pages/Index.cshtml` (`IndexModel.OnPostRegisterAsync`, `IndexModel.OnPostLoginAsync`), серверна частина — маршрути `POST /api/users/register` та `POST /api/users/login` у `Program.cs` і колекція `users` у пам'яті.
 
 ```mermaid
 sequenceDiagram
@@ -9,7 +9,6 @@ sequenceDiagram
     participant S as Сервер API (Program.cs)
     participant M as Колекція users
 
-    rect rgb(245, 242, 252)
     Note over U,M: UC-01: Реєстрація користувача
     U->>P: Вводить ім'я, email і пароль, натискає «Зареєструватися»
     P->>S: POST /api/users/register (RegisterUserRequest)
@@ -27,9 +26,7 @@ sequenceDiagram
             P-->>U: Повідомлення про успішну реєстрацію
         end
     end
-    end
 
-    rect rgb(238, 232, 251)
     Note over U,M: UC-02: Вхід у систему
     U->>P: Вводить email і пароль, натискає «Увійти»
     P->>S: POST /api/users/login (LoginRequest)
@@ -40,6 +37,5 @@ sequenceDiagram
     else Облікові дані вірні (AC-01)
         S-->>P: 200 OK (userId, message)
         P-->>U: Оновити поточний акаунт і показати події
-    end
     end
 ```
