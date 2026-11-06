@@ -36,7 +36,7 @@ public class EventManagementTests
         Assert.Equal(ParticipantRole.Organizer, role.Role);
     }
 
-    [Fact] // межа дати
+    [Fact]
     public void EventForToday_IsAllowed()
     {
         var events = new List<Event>();
@@ -93,7 +93,7 @@ public class EventManagementTests
         Assert.Empty(events);
     }
 
-    [Fact] // дані після відмови
+    [Fact]
     public void RejectedRequest_DoesNotChangeExistingEvents()
     {
         var events = new List<Event>();
