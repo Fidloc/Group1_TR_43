@@ -1,0 +1,333 @@
+@page
+@model EventOrganizer.Api.Pages.IndexModel
+@using EventOrganizer.Api.Models
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EventOrganizer — Організація спільних подій та витрат</title>
+    <link rel="stylesheet" href="~/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="brand">
+                <h1>EventOrganizer</h1>
+                <p>Планування спільних подій, облік витрат і взаєморозрахунків</p>
+            </div>
+            <div class="user-pill">
+                Поточний акаунт: @Model.CurrentUserText
+            </div>
+        </header>
+
+        <div class="grid-2">
+            <div class="card">
+                <h2>Зареєструйте користувача</h2>
+                <p class="subtitle">Створіть новий обліковий запис для участі у подіях</p>
+                <form method="post" asp-page-handler="Register">
+                    <input type="hidden" name="selectedEventId" value="@Model.SelectedEventId" />
+                    <input type="hidden" name="currentUserId" value="@Model.CurrentUserId" />
+                    <input type="hidden" name="currentUser" value="@Model.CurrentUserText" />
+                    <div class="field">
+                        <label>Ім'я</label>
+                        <input type="text" name="regName" placeholder="Введіть ім'я" />
+                    </div>
+                    <div class="field">
+                        <label>Електронна пошта</label>
+                        <input type="text" name="regEmail" placeholder="name@example.com" />
+                    </div>
+                    <div class="field">
+                        <label>Пароль</label>
+                        <input type="password" name="regPass" placeholder="Введіть пароль" />
+                    </div>
+                    <button type="submit">Зареєструватися</button>
+                </form>
+                @if (!string.IsNullOrEmpty(Model.RegMessage))
+                {
+                    <div class="notice @(Model.RegSuccess ? "ok" : "err")">@Model.RegMessage</div>
+                }
+            </div>
+
+            <div class="card">
+                <h2>Увійдіть у систему</h2>
+                <p class="subtitle">Увійдіть під потрібним акаунтом, щоб створювати події або приєднуватися до них</p>
+                <form method="post" asp-page-handler="Login">
+                    <input type="hidden" name="selectedEventId" value="@Model.SelectedEventId" />
+                    <input type="hidden" name="currentUserId" value="@Model.CurrentUserId" />
+                    <input type="hidden" name="currentUser" value="@Model.CurrentUserText" />
+                    <div class="field">
+                        <label>Електронна пошта</label>
+                        <input type="text" name="loginEmail" placeholder="name@example.com" />
+                    </div>
+                    <div class="field">
+                        <label>Пароль</label>
+                        <input type="password" name="loginPass" placeholder="Введіть пароль" />
+                    </div>
+                    <div style="margin-top: 24px;">
+                        <button type="submit">Увійти</button>
+                    </div>
+                </form>
+                @if (!string.IsNullOrEmpty(Model.LoginMessage))
+                {
+                    <div class="notice @(Model.LoginSuccess ? "ok" : "err")">@Model.LoginMessage</div>
+                }
+            </div>
+        </div>
+
+        <div class="grid-2">
+            <div class="card">
+                <h2>Створіть подію</h2>
+                <p class="subtitle">Організатором автоматично стане ваш поточний акаунт: <b>@Model.CurrentUserText</b></p>
+                <form method="post" asp-page-handler="CreateEvent">
+                    <input type="hidden" name="selectedEventId" value="@Model.SelectedEventId" />
+                    <input type="hidden" name="currentUserId" value="@Model.CurrentUserId" />
+                    <input type="hidden" name="currentUser" value="@Model.CurrentUserText" />
+                    <div class="form-row">
+                        <div class="field">
+                            <label>Назва події</label>
+                            <input type="text" name="eventTitle" placeholder="Назва поїздки чи зустрічі" />
+                        </div>
+                        <div class="field">
+                            <label>Дата проведення</label>
+                            <input type="text" name="eventDate" placeholder="РРРР-ММ-ДД" />
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="field">
+                            <label>Місце</label>
+                            <input type="text" name="eventPlace" placeholder="Місто або локація" />
+                        </div>
+                        <div class="field">
+                            <label>Опис</label>
+                            <input type="text" name="eventDescription" placeholder="Короткий опис" />
+                        </div>
+                    </div>
+                    <button type="submit">Створити подію</button>
+                </form>
+                @if (!string.IsNullOrEmpty(Model.CreateEventMessage))
+                {
+                    <div class="notice @(Model.CreateEventSuccess ? "ok" : "err")">@Model.CreateEventMessage</div>
+                }
+            </div>
+
+            <div class="card">
+                <h2>Приєднайтеся до події</h2>
+                <p class="subtitle">До події приєднається ваш поточний акаунт: <b>@Model.CurrentUserText</b></p>
+                <form method="post" asp-page-handler="JoinEvent">
+                    <input type="hidden" name="selectedEventId" value="@Model.SelectedEventId" />
+                    <input type="hidden" name="currentUserId" value="@Model.CurrentUserId" />
+                    <input type="hidden" name="currentUser" value="@Model.CurrentUserText" />
+                    <div class="field">
+                        <label>Код запрошення</label>
+                        <input type="text" name="inviteCode" placeholder="Введіть код запрошення від організатора" />
+                    </div>
+                    <div style="margin-top: 24px;">
+                        <button type="submit">Приєднатися за кодом</button>
+                    </div>
+                </form>
+                @if (!string.IsNullOrEmpty(Model.JoinEventMessage))
+                {
+                    <div class="notice @(Model.JoinEventSuccess ? "ok" : "err")">@Model.JoinEventMessage</div>
+                }
+            </div>
+        </div>
+
+        <div class="card">
+            <form method="post" asp-page-handler="SelectEvent" class="event-bar">
+                <input type="hidden" name="currentUserId" value="@Model.CurrentUserId" />
+                <input type="hidden" name="currentUser" value="@Model.CurrentUserText" />
+                <div class="event-bar-left">
+                    <h2>Оберіть подію</h2>
+                    <p class="subtitle">Переглядайте учасників, витрати та баланси обраної події</p>
+                    <select name="selectedEventId">
+                        @if (Model.Events.Length == 0)
+                        {
+                            <option value="0">— Ще немає створених подій —</option>
+                        }
+                        else
+                        {
+                            @foreach (var ev in Model.Events)
+                            {
+                                var statusName = ev.Status == "Created"
+                                    ? "Активна (Створена)"
+                                    : (ev.Status == "Closed" ? "Закрита" : "Скасована");
+                                <option value="@ev.Id" selected="@(ev.Id == Model.SelectedEventId)">
+                                    @ev.Title • @ev.Place — Код: @ev.InviteCode (@statusName)
+                                </option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div>
+                    <button type="submit" class="secondary">Показати обрану подію</button>
+                </div>
+            </form>
+
+            <h3 style="margin: 20px 0 6px; font-size: 16px;">Учасники та поточний баланс</h3>
+            @if (Model.Participants.Length == 0)
+            {
+                <div style="color: var(--text-muted); font-size: 14px; margin-top: 8px;">
+                    Учасників ще немає. Увійдіть у систему та створіть подію вище, щоб розпочати.
+                </div>
+            }
+            else
+            {
+                <div class="participants-grid">
+                    @foreach (var p in Model.Participants)
+                    {
+                        var b = Model.Balances.FirstOrDefault(x => x.ParticipationId == p.Id);
+                        var paid = b?.Paid ?? 0m;
+                        var owed = b?.Owed ?? 0m;
+                        var bal = b?.Balance ?? 0m;
+                        var isOrg = p.Role == "Organizer";
+                        var balClass = bal > 0 ? "balance-pos" : (bal < 0 ? "balance-neg" : "balance-zero");
+                        var balSign = bal > 0 ? $"+{bal:F2}" : $"{bal:F2}";
+
+                        <div class="member-card">
+                            <div class="member-top">
+                                <span class="member-name">@p.UserName</span>
+                                <span class="badge">@(isOrg ? "Організатор" : "Учасник")</span>
+                            </div>
+                            <div class="member-stats">
+                                <span>Сплачено: <b>@paid.ToString("F2") грн</b></span>
+                                <span>Частка: <b>@owed.ToString("F2") грн</b></span>
+                            </div>
+                            <div style="font-size: 13.5px; display:flex; justify-content:space-between;">
+                                <span>Підсумковий баланс:</span>
+                                <span class="@balClass">@balSign грн</span>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+
+        <div class="grid-2">
+            <div class="card">
+                <h2>Створіть витрату</h2>
+                <p class="subtitle">Додайте нову спільну покупку до обраної події</p>
+                <form method="post" asp-page-handler="AddExpense">
+                    <input type="hidden" name="selectedEventId" value="@Model.SelectedEventId" />
+                    <input type="hidden" name="currentUserId" value="@Model.CurrentUserId" />
+                    <input type="hidden" name="currentUser" value="@Model.CurrentUserText" />
+                    <div class="field">
+                        <label>Хто оплатив</label>
+                        <select name="payerId">
+                            <option value="0" selected>— Оберіть платника —</option>
+                            @foreach (var p in Model.Participants)
+                            {
+                                var roleLabel = p.Role == "Organizer" ? "Організатор" : "Учасник";
+                                <option value="@p.Id">@p.UserName (@roleLabel)</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Сума витрати (грн)</label>
+                        <input type="text" name="expenseAmount" placeholder="0.00" />
+                    </div>
+                    <div class="field">
+                        <label>Опис покупки</label>
+                        <input type="text" name="expenseDesc" placeholder="За що сплачено" />
+                    </div>
+                    <button type="submit">Додати витрату</button>
+                </form>
+                @if (!string.IsNullOrEmpty(Model.ExpenseMessage))
+                {
+                    <div class="notice @(Model.ExpenseSuccess ? "ok" : "err")">@Model.ExpenseMessage</div>
+                }
+            </div>
+
+            <div class="card">
+                <h2>Розподіліть витрату</h2>
+                <p class="subtitle">Дію виконує поточний акаунт (має бути Організатором): <b>@Model.CurrentUserText</b></p>
+                <form method="post" asp-page-handler="Distribute">
+                    <input type="hidden" name="selectedEventId" value="@Model.SelectedEventId" />
+                    <input type="hidden" name="currentUserId" value="@Model.CurrentUserId" />
+                    <input type="hidden" name="currentUser" value="@Model.CurrentUserText" />
+                    <div class="field">
+                        <label>Витрата для розподілу</label>
+                        <select name="distExpenseId">
+                            <option value="0" selected>— Оберіть витрату —</option>
+                            @foreach (var item in Model.Expenses)
+                            {
+                                <option value="@item.Expense.Id">
+                                    @item.Expense.Description — @item.Expense.Amount.ToString("F2") грн
+                                </option>
+                            }
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Залучені учасники</label>
+                        <div class="chips-select">
+                            @if (Model.Participants.Length == 0)
+                            {
+                                <span style="color: var(--text-muted); font-size: 13px;">Немає учасників у події</span>
+                            }
+                            else
+                            {
+                                @foreach (var p in Model.Participants)
+                                {
+                                    <label class="chip-checkbox">
+                                        <input type="checkbox" name="participantIds" value="@p.Id" />
+                                        <span>@p.UserName</span>
+                                    </label>
+                                }
+                            }
+                        </div>
+                    </div>
+                    <button type="submit">Розподілити порівну</button>
+                </form>
+                @if (!string.IsNullOrEmpty(Model.DistMessage))
+                {
+                    <div class="notice @(Model.DistSuccess ? "ok" : "err")">@Model.DistMessage</div>
+                }
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Спільні витрати обраної події</h2>
+            <p class="subtitle">Усі зареєстровані покупки та розраховані частки кожного учасника</p>
+            <div class="expense-list">
+                @if (Model.Expenses.Length == 0)
+                {
+                    <div style="color: var(--text-muted); font-size: 14px;">
+                        У цій події ще немає жодної витрати.
+                    </div>
+                }
+                else
+                {
+                    @foreach (var item in Model.Expenses)
+                    {
+                        <div class="expense-item">
+                            <div class="expense-main">
+                                <span class="expense-title">@item.Expense.Description</span>
+                                <span class="expense-meta">Оплатив(ла): <b>@item.PayerName</b></span>
+                            </div>
+                            <div class="expense-amount">@item.Expense.Amount.ToString("F2") грн</div>
+                            <div class="shares-pills">
+                                @if (item.Shares.Length == 0)
+                                {
+                                    <span style="color: var(--text-muted); font-size: 13px;">
+                                        Ще не розподілено між учасниками
+                                    </span>
+                                }
+                                else
+                                {
+                                    @foreach (var s in item.Shares)
+                                    {
+                                        var mName = Model.Participants.FirstOrDefault(p => p.Id == s.ParticipationId)?.UserName
+                                            ?? $"#{s.ParticipationId}";
+                                        <span class="share-pill">@mName: <b>@s.Amount.ToString("F2") грн</b></span>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</body>
+</html>
