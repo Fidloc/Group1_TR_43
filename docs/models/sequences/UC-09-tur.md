@@ -1,8 +1,6 @@
 # Діаграма послідовності UC-09 «Розподілити витрату»
 
-Автор: Маргарита Тур (@voodoomeggy)
-
-Діаграма побудована за фактичним кодом v1.0: клієнтська частина — Razor Page `Pages/Index.cshtml` (`IndexModel.OnPostDistributeAsync`), серверна частина — маршрут `POST /api/events/{eventId}/expenses/{expenseId}/distribute` у `Program.cs` та розрахунковий клас `ExpenseCalculator` (`src/EventOrganizer.Api/Infrastructure/ExpenseCalculator.cs`).
+Діаграма де клієнтська частина — Razor Page `Pages/Index.cshtml` (`IndexModel.OnPostDistributeAsync`), серверна частина — маршрут `POST /api/events/{eventId}/expenses/{expenseId}/distribute` у `Program.cs` та розрахунковий клас `ExpenseCalculator` (`src/EventOrganizer.Api/Infrastructure/ExpenseCalculator.cs`).
 
 ```mermaid
 sequenceDiagram
