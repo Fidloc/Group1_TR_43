@@ -32,8 +32,6 @@ var shares = new List<ExpenseShare>();
 
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 
-// --- Сюди учасники додають свої маршрути (UC-01/02, UC-07, UC-05, UC-09) ---
-
 // UC-07: створення події
 app.MapPost("/api/events", (JsonElement body) =>
 {
