@@ -22,7 +22,7 @@ app.Use(async (context, next) =>
     }
 });
 
-// Спільні колекції в пам'яті сервера (v1.0)
+// Спільні колекції
 var gate = new object();
 var users = new List<User>();
 var events = new List<Event>();
@@ -32,7 +32,7 @@ var shares = new List<ExpenseShare>();
 
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 
-// UC-07: створення події
+// UC-07
 app.MapPost("/api/events", (JsonElement body) =>
 {
     if (!EventManagement.TryReadCreate(body, out var request, out var code))
@@ -50,7 +50,7 @@ app.MapPost("/api/events", (JsonElement body) =>
     }
 });
 
-// Список подій (?userId — лише події користувача)
+// Список подій
 app.MapGet("/api/events", (int? userId) =>
 {
     lock (gate)
@@ -65,7 +65,7 @@ app.MapGet("/api/events", (int? userId) =>
     }
 });
 
-// UC-03: перегляд події
+// UC-03
 app.MapGet("/api/events/{eventId}", (string eventId) =>
 {
     if (!int.TryParse(eventId, out var id) || id <= 0)
@@ -81,7 +81,7 @@ app.MapGet("/api/events/{eventId}", (string eventId) =>
     }
 });
 
-// UC-04: приєднання за кодом
+// UC-04
 app.MapPost("/api/events/join", (JsonElement body) =>
 {
     if (!EventManagement.TryReadJoin(body, out var request))
@@ -99,7 +99,7 @@ app.MapPost("/api/events/join", (JsonElement body) =>
     }
 });
 
-// UC-10 / UC-11: закриття і скасування
+// UC-10 UC-11
 IResult ChangeEventStatus(string eventId, JsonElement body, EventStatus target)
 {
     if (!int.TryParse(eventId, out var id) || id <= 0 ||
