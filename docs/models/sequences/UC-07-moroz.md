@@ -2,7 +2,11 @@
 
 Автор: Іван Мороз (@Fidloc)
 
-Діаграма зроблена за фактичним кодом v1.0: клієнт — `EventActions.RunAsync` (src/EventOrganizer.Client/EventActions.cs), сервер — маршрут `POST /api/events` у Program.cs і клас `EventManagement` (src/EventOrganizer.Api/Infrastructure/EventManagement.cs). Колекції `events` і `participations` — це списки в пам'яті сервера, а не окремий клас сховища.
+Діаграма v1.0: 
+Клієнт — `EventActions.RunAsync` (src/EventOrganizer.Client/EventActions.cs)
+Сервер — маршрут `POST /api/events` у Program.cs 
+Клас `EventManagement` (src/EventOrganizer.Api/Infrastructure/EventManagement.cs)
+Колекції `events`, `participations` списки в пам'яті сервера
 
 ```mermaid
 sequenceDiagram
@@ -38,11 +42,11 @@ sequenceDiagram
     A-->>C: 200 список подій користувача
 ```
 
-У гілках з відмовою немає викликів `events.Add` і `participations.Add`, тому список подій не змінюється. Останній GET клієнт робить, щоб показати, що подія з'явилась у списку (AC-03) або що після відмови список такий самий, як був (AC-04).
 
-## Відповідність коду
 
-| Повідомлення на діаграмі | Де в коді |
+## Відповідність
+
+| Повідомлення на діаграмі | В коді |
 |---|---|
 | POST /api/events | `app.MapPost("/api/events", ...)` у Program.cs |
 | TryReadCreate | `EventManagement.TryReadCreate` — перевірка назви, потім дати |
