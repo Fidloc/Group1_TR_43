@@ -5,19 +5,15 @@ using EventOrganizer.Api.Models;
 
 namespace EventOrganizer.Api.Infrastructure;
 
-// UC-07 «Створити подію» (FR-03, FR-04) і пов'язані дії з подією:
-// UC-03 перегляд (FR-05, FR-08), UC-04 приєднання за кодом (FR-07, FR-15),
-// UC-10 закриття (FR-13), UC-11 скасування (FR-14).
-// Методи Try* змінюють колекції лише після всіх перевірок; їх треба викликати під lock(gate).
+// Дії з подією: UC-07 створення, UC-03 перегляд, UC-04 приєднання, UC-10/11 закриття і скасування.
+// Try* змінюють колекції лише після всіх перевірок; викликати під lock(gate).
 public static class EventManagement
 {
     public const int InviteCodeLength = 8;
 
-    // ---------- UC-07: створення події ----------
+    // UC-07: створення
 
-    // Перевіряє формат тіла запиту. Порядок як на діаграмі діяльності:
-    // спочатку назва (A1 → missing_title), потім дата (A2 → invalid_date).
-    // Дату в минулому перевіряє TryCreate, бо для цього потрібна поточна дата.
+    // Як на діаграмі: спочатку назва (A1), потім дата (A2). Минулу дату перевіряє TryCreate.
     public static bool TryReadCreate(JsonElement body, out CreateEventRequest? request, out string? code)
     {
         request = null;
@@ -48,12 +44,11 @@ public static class EventManagement
         return true;
     }
 
-    // Дата «не в минулому»: порівнюється лише дата без часу, тому подія на сьогодні дозволена.
+    // Сьогоднішня дата дозволена.
     public static bool IsValidDate(DateTime date, DateTime now) =>
         date != default && date.Date >= now.Date;
 
-    // Повертає null при успіху або код відмови. При відмові колекції не змінюються.
-    // Створювач події автоматично стає її Організатором (FR-03).
+    // null — успіх, інакше код відмови. Створювач стає Організатором.
     public static string? TryCreate(
         List<Event> events,
         List<Participation> participations,
@@ -72,7 +67,7 @@ public static class EventManagement
         if (!IsValidDate(request.Date, now))
             return "invalid_date";
 
-        // TODO після злиття з UC-02: перевіряти, що OrganizerUserId є серед users (404 user_not_found).
+        // TODO (UC-02): перевіряти, що користувач існує.
 
         created = new Event
         {
@@ -98,7 +93,7 @@ public static class EventManagement
         return null;
     }
 
-    // ---------- UC-04: приєднання за кодом запрошення ----------
+    // UC-04: приєднання
 
     public static bool TryReadJoin(JsonElement body, out JoinEventRequest? request)
     {
@@ -128,7 +123,7 @@ public static class EventManagement
         if (ev is null)
             return "event_not_found";
         if (ev.Status != EventStatus.Created)
-            return "event_not_active"; // FR-15
+            return "event_not_active";
         var eventId = ev.Id;
         if (participations.Any(p => p.EventId == eventId && p.UserId == request.UserId))
             return "already_joined";
@@ -145,7 +140,7 @@ public static class EventManagement
         return null;
     }
 
-    // ---------- UC-10 / UC-11: закриття та скасування ----------
+    // UC-10 / UC-11: закриття і скасування
 
     public static bool TryReadUserId(JsonElement body, out int userId)
     {
@@ -153,7 +148,7 @@ public static class EventManagement
         return body.ValueKind == JsonValueKind.Object && TryReadPositiveInt(body, "userId", out userId);
     }
 
-    // target — Closed (UC-10) або Cancelled (UC-11). Переходи лише зі стану Created і лише Організатором.
+    // Лише Організатор і лише зі стану Created.
     public static string? TryChangeStatus(
         List<Event> events,
         List<Participation> participations,
@@ -178,7 +173,7 @@ public static class EventManagement
         return null;
     }
 
-    // ---------- UC-03: перегляд події ----------
+    // UC-03: перегляд
 
     public static EventDetailsDto ToDetails(Event ev, IEnumerable<Participation> participations)
     {
@@ -197,7 +192,7 @@ public static class EventManagement
     public static ParticipantDto ToParticipant(Participation p) =>
         new(p.Id, p.UserId, p.Role.ToString(), p.JoinedAt);
 
-    // ---------- допоміжні методи ----------
+    // Допоміжні
 
     public static bool IsOrganizer(IEnumerable<Participation> participations, int eventId, int userId) =>
         participations.Any(p => p.EventId == eventId && p.UserId == userId && p.Role == ParticipantRole.Organizer);
@@ -223,7 +218,7 @@ public static class EventManagement
                value > 0;
     }
 
-    // Поле може бути відсутнім або null (тоді ""), але якщо воно є — має бути рядком.
+    // Відсутнє або null → "", інакше лише рядок.
     private static bool TryReadOptionalString(JsonElement body, string name, out string value)
     {
         value = "";

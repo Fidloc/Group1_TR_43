@@ -2,8 +2,7 @@ using System.Net.Http.Json;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 
-// Клієнтська дія UC-07 «Створити подію» та пов'язані дії з подією (UC-03, UC-04, UC-10, UC-11).
-// Контрольний сценарій без меню: успішні кроки, відмови й перевірка, що після відмови дані не змінились.
+// Контрольний сценарій UC-07 і пов'язаних дій: успіх, відмови, дані після відмови.
 public static class EventActions
 {
     private const int OrganizerId = 1;
@@ -121,7 +120,7 @@ public static class EventActions
         return await ShowAsync(response);
     }
 
-    // Показує відповідь сервера; повертає тіло успішної відповіді або null при відмові
+    // Друкує відповідь; повертає тіло при успіху, інакше null.
     private static async Task<JsonElement?> ShowAsync(HttpResponseMessage response)
     {
         var text = await response.Content.ReadAsStringAsync();

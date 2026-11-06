@@ -8,7 +8,7 @@
 
 Команда: `dotnet test --filter FullyQualifiedName~EventManagementTests`
 
-Результат: total: 31; failed: 0; succeeded: 31; skipped: 0 (06.11.2026, .NET SDK 9.0.320). Разом із наявним `UnitTest1` — 32 з 32.
+Результат: total: 7; failed: 0; succeeded: 7; skipped: 0 (06.11.2026, .NET SDK 9.0.320). Разом із наявним `UnitTest1` — 8 з 8.
 
 ## Ручні перевірки через клієнт і HTTP
 

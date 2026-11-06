@@ -34,7 +34,7 @@ app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 
 // --- Сюди учасники додають свої маршрути (UC-01/02, UC-07, UC-05, UC-09) ---
 
-// Створення події (UC-07; FR-03, FR-04)
+// UC-07: створення події
 app.MapPost("/api/events", (JsonElement body) =>
 {
     if (!EventManagement.TryReadCreate(body, out var request, out var code))
@@ -52,7 +52,7 @@ app.MapPost("/api/events", (JsonElement body) =>
     }
 });
 
-// Список подій; з ?userId=N — лише події, де користувач є учасником (AC-03)
+// Список подій (?userId — лише події користувача)
 app.MapGet("/api/events", (int? userId) =>
 {
     lock (gate)
@@ -67,7 +67,7 @@ app.MapGet("/api/events", (int? userId) =>
     }
 });
 
-// Перегляд події разом зі списком учасників (UC-03; FR-05, FR-08)
+// UC-03: перегляд події
 app.MapGet("/api/events/{eventId}", (string eventId) =>
 {
     if (!int.TryParse(eventId, out var id) || id <= 0)
@@ -83,7 +83,7 @@ app.MapGet("/api/events/{eventId}", (string eventId) =>
     }
 });
 
-// Приєднання за кодом запрошення (UC-04; FR-07, FR-15)
+// UC-04: приєднання за кодом
 app.MapPost("/api/events/join", (JsonElement body) =>
 {
     if (!EventManagement.TryReadJoin(body, out var request))
@@ -101,7 +101,7 @@ app.MapPost("/api/events/join", (JsonElement body) =>
     }
 });
 
-// Закриття (UC-10; FR-13) і скасування (UC-11; FR-14) події Організатором
+// UC-10 / UC-11: закриття і скасування
 IResult ChangeEventStatus(string eventId, JsonElement body, EventStatus target)
 {
     if (!int.TryParse(eventId, out var id) || id <= 0 ||
