@@ -2,7 +2,7 @@ using System.Net.Http.Json;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 
-// Контрольний сценарій UC-07 і пов'язаних дій: успіх, відмови, дані після відмови.
+// Cценарій UC-07
 public static class EventActions
 {
     private const int OrganizerId = 1;
@@ -120,7 +120,6 @@ public static class EventActions
         return await ShowAsync(response);
     }
 
-    // Друкує відповідь; повертає тіло при успіху, інакше null.
     private static async Task<JsonElement?> ShowAsync(HttpResponseMessage response)
     {
         var text = await response.Content.ReadAsStringAsync();
