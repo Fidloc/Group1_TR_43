@@ -34,7 +34,7 @@ public class ExpenseRegistrationTests
         var (events, participations, expenses) = Seed();
 
         var error = ExpenseRegistration.TryAdd(events, participations, expenses, 1,
-            new CreateExpenseRequest(2, 450.50m, "Продукти"), Now, out var expense);
+            new CreateExpenseRequest(1, 2, 450.50m, "Продукти"), Now, out var expense);
 
         Assert.Null(error);
         Assert.NotNull(expense);
@@ -51,9 +51,9 @@ public class ExpenseRegistrationTests
         var (events, participations, expenses) = Seed();
 
         ExpenseRegistration.TryAdd(events, participations, expenses, 1,
-            new CreateExpenseRequest(1, 100m, "Оренда"), Now, out _);
+            new CreateExpenseRequest(1, 1, 100m, "Оренда"), Now, out _);
         ExpenseRegistration.TryAdd(events, participations, expenses, 1,
-            new CreateExpenseRequest(2, 50m, "Квитки"), Now, out var second);
+            new CreateExpenseRequest(1, 2, 50m, "Квитки"), Now, out var second);
 
         Assert.Equal(2, expenses.Count);
         Assert.Equal(2, second!.Id);
@@ -70,7 +70,7 @@ public class ExpenseRegistrationTests
         var amount = decimal.Parse(amountText, System.Globalization.CultureInfo.InvariantCulture);
 
         var error = ExpenseRegistration.TryAdd(events, participations, expenses, 1,
-            new CreateExpenseRequest(1, amount, "Помилка"), Now, out var expense);
+            new CreateExpenseRequest(1, 1, amount, "Помилка"), Now, out var expense);
 
         Assert.Equal("invalid_amount", error);
         Assert.Null(expense);
@@ -85,7 +85,7 @@ public class ExpenseRegistrationTests
         var (events, participations, expenses) = Seed(status);
 
         var error = ExpenseRegistration.TryAdd(events, participations, expenses, 1,
-            new CreateExpenseRequest(1, 100m, "Піца"), Now, out _);
+            new CreateExpenseRequest(1, 1, 100m, "Піца"), Now, out _);
 
         Assert.Equal("event_not_active", error);
         Assert.Empty(expenses);
@@ -97,7 +97,7 @@ public class ExpenseRegistrationTests
         var (events, participations, expenses) = Seed();
 
         var error = ExpenseRegistration.TryAdd(events, participations, expenses, 99,
-            new CreateExpenseRequest(1, 100m, "Піца"), Now, out _);
+            new CreateExpenseRequest(1, 1, 100m, "Піца"), Now, out _);
 
         Assert.Equal("event_not_found", error);
         Assert.Empty(expenses);
@@ -110,7 +110,7 @@ public class ExpenseRegistrationTests
 
         // учасник 3 належить до події 2, а не 1
         var error = ExpenseRegistration.TryAdd(events, participations, expenses, 1,
-            new CreateExpenseRequest(3, 100m, "Піца"), Now, out _);
+            new CreateExpenseRequest(1, 3, 100m, "Піца"), Now, out _);
 
         Assert.Equal("participant_not_found", error);
         Assert.Empty(expenses);
@@ -121,10 +121,10 @@ public class ExpenseRegistrationTests
     {
         var (events, participations, expenses) = Seed();
         ExpenseRegistration.TryAdd(events, participations, expenses, 1,
-            new CreateExpenseRequest(1, 300m, "Оренда"), Now, out var first);
+            new CreateExpenseRequest(1, 1, 300m, "Оренда"), Now, out var first);
 
         var error = ExpenseRegistration.TryAdd(events, participations, expenses, 1,
-            new CreateExpenseRequest(1, -5m, "Помилка"), Now, out _);
+            new CreateExpenseRequest(1, 1, -5m, "Помилка"), Now, out _);
 
         Assert.Equal("invalid_amount", error);
         var only = Assert.Single(expenses);
@@ -132,11 +132,53 @@ public class ExpenseRegistrationTests
         Assert.Equal(300m, only.Amount);
     }
 
+    [Fact] // FR-09: витрату вносить лише Організатор
+    public void NotOrganizer_IsRejected_AndNothingSaved()
+    {
+        var (events, participations, expenses) = Seed();
+
+        // користувач 2 — звичайний учасник події 1
+        var error = ExpenseRegistration.TryAdd(events, participations, expenses, 1,
+            new CreateExpenseRequest(2, 2, 100m, "Піца"), Now, out var expense);
+
+        Assert.Equal("forbidden_not_organizer", error);
+        Assert.Null(expense);
+        Assert.Empty(expenses);
+    }
+
+    [Fact]
+    public void OrganizerOfAnotherEvent_IsRejected()
+    {
+        var (events, participations, expenses) = Seed();
+
+        // користувач 3 організатор події 2, але не події 1
+        var error = ExpenseRegistration.TryAdd(events, participations, expenses, 1,
+            new CreateExpenseRequest(3, 1, 100m, "Піца"), Now, out _);
+
+        Assert.Equal("forbidden_not_organizer", error);
+        Assert.Empty(expenses);
+    }
+
+    [Fact]
+    public void Organizer_CanRegisterExpensePaidByParticipant()
+    {
+        var (events, participations, expenses) = Seed();
+
+        // організатор (користувач 1) вносить витрату, яку оплатив учасник 2
+        var error = ExpenseRegistration.TryAdd(events, participations, expenses, 1,
+            new CreateExpenseRequest(1, 2, 80m, "Квитки"), Now, out var expense);
+
+        Assert.Null(error);
+        Assert.Equal(2, expense!.PayerParticipationId);
+        Assert.Single(expenses);
+    }
+
     [Theory] // формат тіла запиту
-    [InlineData("""{"payerParticipationId":1,"amount":"abc","description":"x"}""", "invalid_amount")]
-    [InlineData("""{"payerParticipationId":1,"description":"x"}""", "invalid_amount")]
-    [InlineData("""{"payerParticipationId":1,"amount":0}""", "invalid_amount")]
-    [InlineData("""{"amount":100}""", "invalid_request")]
+    [InlineData("""{"userId":1,"payerParticipationId":1,"amount":"abc","description":"x"}""", "invalid_amount")]
+    [InlineData("""{"userId":1,"payerParticipationId":1,"description":"x"}""", "invalid_amount")]
+    [InlineData("""{"userId":1,"payerParticipationId":1,"amount":0}""", "invalid_amount")]
+    [InlineData("""{"userId":1,"amount":100}""", "invalid_request")]
+    [InlineData("""{"payerParticipationId":1,"amount":100}""", "invalid_request")]
     [InlineData("""[1,2,3]""", "invalid_request")]
     public void TryRead_RejectsBadBody(string json, string expectedCode)
     {
@@ -153,12 +195,12 @@ public class ExpenseRegistrationTests
     public void TryRead_AcceptsValidBody()
     {
         using var doc = JsonDocument.Parse(
-            """{"payerParticipationId":2,"amount":120.75,"description":"  Таксі  "}""");
+            """{"userId":1,"payerParticipationId":2,"amount":120.75,"description":"  Таксі  "}""");
 
         var ok = ExpenseRegistration.TryRead(doc.RootElement, out var request, out var code);
 
         Assert.True(ok);
         Assert.Null(code);
-        Assert.Equal(new CreateExpenseRequest(2, 120.75m, "Таксі"), request);
+        Assert.Equal(new CreateExpenseRequest(1, 2, 120.75m, "Таксі"), request);
     }
 }

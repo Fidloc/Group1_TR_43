@@ -239,6 +239,14 @@ public class IndexModel : PageModel
     {
         RestoreSession(selectedEventId, currentUserId, currentUser);
 
+        if (CurrentUserId <= 0)
+        {
+            ExpenseSuccess = false;
+            ExpenseMessage = "Спочатку увійдіть у систему.";
+            await LoadPageDataAsync();
+            return Page();
+        }
+
         var normalized = (expenseAmount ?? "").Trim().Replace(',', '.');
         object amountValue = decimal.TryParse(normalized, NumberStyles.Any, CultureInfo.InvariantCulture, out var parsed)
             ? parsed
@@ -247,6 +255,7 @@ public class IndexModel : PageModel
         using var http = CreateApiClient();
         var response = await http.PostAsJsonAsync($"/api/events/{SelectedEventId}/expenses", new
         {
+            userId = CurrentUserId,
             payerParticipationId = payerId,
             amount = amountValue,
             description = expenseDesc ?? ""

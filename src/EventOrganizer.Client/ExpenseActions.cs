@@ -12,6 +12,7 @@ public static class ExpenseActions
         Console.WriteLine("=== UC-05: Додати витрату ===");
 
         var eventId = ReadInt("ID події: ");
+        var userId = ReadInt("Ваш ID користувача (Організатор події): ");
         var payerId = ReadInt("ID учасника, який заплатив (participationId): ");
 
         while (true)
@@ -29,6 +30,7 @@ public static class ExpenseActions
 
             var body = new JsonObject
             {
+                ["userId"] = userId,
                 ["payerParticipationId"] = payerId,
                 ["description"] = description
             };
