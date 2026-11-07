@@ -2,7 +2,7 @@
 
 Матриця з ЛР №3 (вимоги, use cases, критерії приймання, моделі) доповнена для ЛР №4: для кожної вимоги вказано компонент, яким вона реалізована, як її перевіряли і що вийшло.
 
-Діаграми Use Case, класів і станів є в [design.md](design.md), діаграми діяльності в [model/](../model/), діаграми послідовності в [models/sequences/](models/sequences/). Протоколи перевірок: [UC-02](tests/UC-02-protocol.md), [UC-05](tests/UC-05-protocol.md), [UC-07](tests/UC-07-protocol.md), [UC-09](tests/UC-09-protocol.md). Автотести в [tests/EventOrganizer.Tests](../tests/EventOrganizer.Tests/), `dotnet test` дає 38/38 (разом із порожнім `UnitTest1`). UC-05 злито через PR #10, решту сценаріїв через PR #11.
+Діаграми Use Case, класів і станів є в [design.md](design.md), діаграми діяльності в [model/](../model/), діаграми послідовності в [models/sequences/](models/sequences/). Протоколи перевірок: [UC-02](tests/UC-02-protocol.md), [UC-05](tests/UC-05-protocol.md), [UC-07](tests/UC-07-protocol.md), [UC-09](tests/UC-09-protocol.md). Автотести в [tests/EventOrganizer.Tests](../tests/EventOrganizer.Tests/), `dotnet test` дає 38/38 (разом із порожнім `UnitTest1`). UC-05 злито через PR #10 (перевірку Організатора — через PR #13), решту сценаріїв через PR #11, цю матрицю — через PR #12.
 
 | Вимога | Use Case | Критерій приймання | Проєктний артефакт | Компонент | Перевірка | Фактичний результат |
 |---|---|---|---|---|---|---|
