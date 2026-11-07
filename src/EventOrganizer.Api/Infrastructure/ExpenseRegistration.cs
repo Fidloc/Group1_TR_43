@@ -5,6 +5,7 @@ using EventOrganizer.Api.Models;
 namespace EventOrganizer.Api.Infrastructure;
 
 // UC-05 «Зареєструвати витрату» (FR-09, FR-10, FR-15)
+// Витрату вносить Організатор події, платником може бути будь-який учасник цієї події
 public static class ExpenseRegistration
 {
     public const decimal MaxAmount = 1_000_000m;
@@ -17,6 +18,12 @@ public static class ExpenseRegistration
         code = "invalid_request";
 
         if (body.ValueKind != JsonValueKind.Object)
+            return false;
+
+        // хто вносить витрату (поточний користувач), FR-09: лише Організатор
+        if (!body.TryGetProperty("userId", out var user) ||
+            user.ValueKind != JsonValueKind.Number ||
+            !user.TryGetInt32(out var userId) || userId <= 0)
             return false;
 
         if (!body.TryGetProperty("payerParticipationId", out var payer) ||
@@ -40,7 +47,7 @@ public static class ExpenseRegistration
             !IsValidAmount(amount))
             return false;
 
-        request = new CreateExpenseRequest(payerId, amount, description);
+        request = new CreateExpenseRequest(userId, payerId, amount, description);
         code = null;
         return true;
     }
@@ -71,6 +78,12 @@ public static class ExpenseRegistration
 
         if (ev.Status != EventStatus.Created)
             return "event_not_active";
+
+        // FR-09: витрату реєструє Організатор цієї події
+        if (!participations.Any(p => p.EventId == eventId &&
+                                     p.UserId == request.UserId &&
+                                     p.Role == ParticipantRole.Organizer))
+            return "forbidden_not_organizer";
 
         if (!participations.Any(p => p.Id == request.PayerParticipationId && p.EventId == eventId))
             return "participant_not_found";
