@@ -2,7 +2,7 @@
 
 Матриця з ЛР №3 (вимоги, use cases, критерії приймання, моделі) доповнена для ЛР №4: для кожної вимоги вказано компонент, яким вона реалізована, як її перевіряли і що вийшло.
 
-Діаграми Use Case, класів і станів є в [design.md](design.md), діаграми діяльності в [model/](../model/), діаграми послідовності в [models/sequences/](models/sequences/). Протоколи перевірок: [UC-02](tests/UC-02-protocol.md), [UC-05](tests/UC-05-protocol.md), [UC-07](tests/UC-07-protocol.md), [UC-09](tests/UC-09-protocol.md). Автотести в [tests/EventOrganizer.Tests](../tests/EventOrganizer.Tests/), `dotnet test` дає 38/38 (разом із порожнім `UnitTest1`). UC-05 злито через PR #10, решту сценаріїв через PR #11.
+Діаграми Use Case, класів і станів є в [design.md](design.md), діаграми діяльності в [model/](../model/), діаграми послідовності в [models/sequences/](models/sequences/). Протоколи перевірок: [UC-02](tests/UC-02-protocol.md), [UC-05](tests/UC-05-protocol.md), [UC-07](tests/UC-07-protocol.md), [UC-09](tests/UC-09-protocol.md). Автотести в [tests/EventOrganizer.Tests](../tests/EventOrganizer.Tests/), `dotnet test` дає 38/38 (разом із порожнім `UnitTest1`). UC-05 злито через PR #10 (перевірку Організатора — через PR #13), решту сценаріїв через PR #11, цю матрицю — через PR #12.
 
 | Вимога | Use Case | Критерій приймання | Проєктний артефакт | Компонент | Перевірка | Фактичний результат |
 |---|---|---|---|---|---|---|
@@ -33,5 +33,3 @@ FR-05, FR-07, FR-08, FR-13, FR-14 перевірені тільки вручну
 ## Перевірка одного зв'язку
 
 FR-10 → UC-05 (A1) → AC-10 → діаграма діяльності UC-05 (рішення «Сума — число і більша за 0?») → `ExpenseRegistration.IsValidAmount` → тест `InvalidAmount_IsRejected_AndNothingSaved` і рядок «Сума 0» у протоколі UC-05 → результат: 400 `invalid_amount`, список витрат не змінився.
-
-Пройшла: Анастасія Халаминдик. Звірила: ________. Повноту перевірила: ________.
