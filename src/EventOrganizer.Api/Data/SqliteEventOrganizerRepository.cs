@@ -29,6 +29,7 @@ public sealed class SqliteEventOrganizerRepository : IEventOrganizerRepository
 
     public async Task<User> AddUserAsync(User user)
     {
+        user.Id = 0; // Дозволяємо SQLite призначити автоінкрементний первинний ключ
         _db.Users.Add(user);
         await _db.SaveChangesAsync();
         return user;
@@ -62,6 +63,7 @@ public sealed class SqliteEventOrganizerRepository : IEventOrganizerRepository
 
     public async Task<Event> AddEventAsync(Event ev)
     {
+        ev.Id = 0; // Дозволяємо SQLite призначити автоінкрементний первинний ключ
         _db.Events.Add(ev);
         await _db.SaveChangesAsync();
         return ev;
@@ -93,6 +95,7 @@ public sealed class SqliteEventOrganizerRepository : IEventOrganizerRepository
 
     public async Task<Participation> AddParticipationAsync(Participation participation)
     {
+        participation.Id = 0; // Дозволяємо SQLite призначити автоінкрементний первинний ключ
         _db.Participations.Add(participation);
         await _db.SaveChangesAsync();
         return participation;
@@ -110,6 +113,7 @@ public sealed class SqliteEventOrganizerRepository : IEventOrganizerRepository
 
     public async Task<Expense> AddExpenseAsync(Expense expense)
     {
+        expense.Id = 0; // Дозволяємо SQLite призначити автоінкрементний первинний ключ
         _db.Expenses.Add(expense);
         await _db.SaveChangesAsync();
         return expense;
