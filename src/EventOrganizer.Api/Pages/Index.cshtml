@@ -202,6 +202,48 @@
                     }
                 </div>
             }
+
+            @if (Model.SelectedEventId > 0)
+            {
+                var curEv = Model.Events.FirstOrDefault(e => e.Id == Model.SelectedEventId);
+                var isCurOrg = Model.Participants.Any(p => p.UserId == Model.CurrentUserId && p.Role == "Organizer");
+                if (curEv != null && isCurOrg && curEv.Status == "Created")
+                {
+                    <div style="margin-top: 24px; padding-top: 18px; border-top: 1px dashed var(--border-color);">
+                        <h3 style="margin: 0 0 8px; font-size: 15px; color: var(--primary);">Редагувати дані події (UC-08)</h3>
+                        <form method="post" asp-page-handler="EditEvent">
+                            <input type="hidden" name="selectedEventId" value="@Model.SelectedEventId" />
+                            <input type="hidden" name="currentUserId" value="@Model.CurrentUserId" />
+                            <input type="hidden" name="currentUser" value="@Model.CurrentUserText" />
+                            <div class="grid-2">
+                                <div class="field">
+                                    <label>Нова назва</label>
+                                    <input type="text" name="editTitle" value="@curEv.Title" required />
+                                </div>
+                                <div class="field">
+                                    <label>Нова дата</label>
+                                    <input type="date" name="editDate" value="@(curEv.Date.ToString("yyyy-MM-dd"))" required />
+                                </div>
+                            </div>
+                            <div class="grid-2">
+                                <div class="field">
+                                    <label>Нове місце</label>
+                                    <input type="text" name="editPlace" value="@curEv.Place" />
+                                </div>
+                                <div class="field">
+                                    <label>Новий опис</label>
+                                    <input type="text" name="editDesc" value="@curEv.Description" />
+                                </div>
+                            </div>
+                            <button type="submit" class="secondary" style="margin-top: 8px;">Зберегти зміни події</button>
+                        </form>
+                        @if (!string.IsNullOrEmpty(Model.EditEventMessage))
+                        {
+                            <div class="notice @(Model.EditEventSuccess ? "ok" : "err")" style="margin-top: 10px;">@Model.EditEventMessage</div>
+                        }
+                    </div>
+                }
+            }
         </div>
 
         <div class="grid-2">
