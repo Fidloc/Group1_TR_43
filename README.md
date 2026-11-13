@@ -50,8 +50,6 @@ dotnet tool install --global dotnet-ef --version 9.0.0
 dotnet ef database update --project src/EventOrganizer.Api
 ```
 
-> 💡 **Примітка:** Під час запуску веб-сервера (`dotnet run --project src/EventOrganizer.Api`) міграції бази даних застосовуються **автоматично** через `db.Database.Migrate();`, тому окремо створювати базу даних перед запуском не обов'язково.
-
 ## Запуск із вихідного коду
 
 ```bash
