@@ -15,7 +15,6 @@ classDiagram
 
     class Event {
         +int Id : PK
-        +int OrganizerUserId : FK
         +string Title
         +DateTime Date
         +string Place
@@ -63,10 +62,9 @@ classDiagram
 
     User "1" --> "0..*" Participation : has
     Event "1" --> "1..*" Participation : includes
-    User "1" --> "0..*" Event : organizes
     Event "1" --> "0..*" Expense : tracks
     Participation "1" --> "0..*" Expense : pays
-    Expense "1" --> "1..*" ExpenseShare : splits into
+    Expense "1" --> "0..*" ExpenseShare : splits into
     Participation "1" --> "0..*" ExpenseShare : owes
     Event --> EventStatus : has
     Participation --> ParticipantRole : assigned
@@ -77,5 +75,10 @@ classDiagram
 * **Event (1) &rarr; Participation (1..\*):** кожна подія має щонайменше одного учасника (Організатора).
 * **Event (1) &rarr; Expense (0..\*):** подія може містити нуль або більше витрат.
 * **Participation (1) &rarr; Expense (0..\*):** конкретний учасник може бути платником кількох витрат.
-* **Expense (1) &rarr; ExpenseShare (1..\*):** зареєстрована витрата розподіляється на одну або більше часток.
+* **Expense (1) &rarr; ExpenseShare (0..\*):** після реєстрації (UC-05) витрата ще не має часток; частки з'являються після розподілу (UC-09).
 * **Participation (1) &rarr; ExpenseShare (0..\*):** на частку витрати призначається конкретний учасник (`Participation`).
+
+## Як визначається Організатор
+У таблиці `Events` немає окремого зовнішнього ключа на організатора. Роль користувача в конкретній події зберігається в `Participation.Role`: Організатор — це учасник із `Role = Organizer`. Тому один користувач може бути Організатором однієї події й Учасником іншої.
+
+Поле `EventStatus` і `ParticipantRole` зберігаються в БД як текст (`HasConversion<string>()` в `AppDbContext`).
