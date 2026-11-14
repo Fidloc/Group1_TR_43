@@ -2,9 +2,9 @@ namespace EventOrganizer.Api.Models;
 
 public sealed class Participation
 {
-    public int Id { get; init; }
-    public int UserId { get; init; }
-    public int EventId { get; init; }
-    public ParticipantRole Role { get; init; }
-    public DateTime JoinedAt { get; init; }
+    public int Id { get; set; }
+    public int UserId { get; set; }
+    public int EventId { get; set; }
+    public ParticipantRole Role { get; set; }
+    public DateTime JoinedAt { get; set; }
 }

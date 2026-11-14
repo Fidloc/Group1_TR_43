@@ -2,10 +2,10 @@ namespace EventOrganizer.Api.Models;
 
 public sealed class Expense
 {
-    public int Id { get; init; }
-    public int EventId { get; init; }
-    public int PayerParticipationId { get; init; }
-    public decimal Amount { get; init; }
-    public string Description { get; init; } = "";
-    public DateTime CreatedAt { get; init; }
+    public int Id { get; set; }
+    public int EventId { get; set; }
+    public int PayerParticipationId { get; set; }
+    public decimal Amount { get; set; }
+    public string Description { get; set; } = "";
+    public DateTime CreatedAt { get; set; }
 }

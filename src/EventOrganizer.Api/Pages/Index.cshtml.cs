@@ -42,6 +42,9 @@ public class IndexModel : PageModel
     public string? DistMessage { get; set; }
     public bool DistSuccess { get; set; }
 
+    public string? EditEventMessage { get; set; }
+    public bool EditEventSuccess { get; set; }
+
     private HttpClient CreateApiClient()
     {
         var baseUrl = $"{Request.Scheme}://{Request.Host}";
@@ -182,6 +185,59 @@ public class IndexModel : PageModel
             CreateEventMessage = body.TryGetProperty("message", out var msg)
                 ? msg.GetString()
                 : "Не вдалося створити подію.";
+        }
+
+        await LoadPageDataAsync();
+        return Page();
+    }
+
+    public async Task<IActionResult> OnPostEditEventAsync(
+        int selectedEventId,
+        int currentUserId,
+        string? currentUser,
+        string editTitle,
+        string editDate,
+        string editPlace,
+        string editDesc)
+    {
+        RestoreSession(selectedEventId, currentUserId, currentUser);
+
+        if (CurrentUserId <= 0)
+        {
+            EditEventSuccess = false;
+            EditEventMessage = "Спочатку увійдіть в акаунт Організатора події.";
+            await LoadPageDataAsync();
+            return Page();
+        }
+
+        if (SelectedEventId <= 0)
+        {
+            EditEventSuccess = false;
+            EditEventMessage = "Спочатку виберіть подію для редагування.";
+            await LoadPageDataAsync();
+            return Page();
+        }
+
+        using var http = CreateApiClient();
+        var response = await http.PutAsJsonAsync($"/api/events/{SelectedEventId}", new UpdateEventRequest(
+            CurrentUserId,
+            editTitle ?? "",
+            editDate ?? "",
+            editPlace ?? "",
+            editDesc ?? ""));
+
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>();
+        if (response.IsSuccessStatusCode)
+        {
+            EditEventSuccess = true;
+            EditEventMessage = $"Подію «{editTitle}» успішно оновлено!";
+        }
+        else
+        {
+            EditEventSuccess = false;
+            EditEventMessage = body.TryGetProperty("message", out var msg)
+                ? msg.GetString()
+                : "Не вдалося оновити подію.";
         }
 
         await LoadPageDataAsync();
