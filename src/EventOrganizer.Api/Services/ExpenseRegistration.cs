@@ -2,7 +2,7 @@ using System.Text.Json;
 using EventOrganizer.Api.Contracts;
 using EventOrganizer.Api.Models;
 
-namespace EventOrganizer.Api.Infrastructure;
+namespace EventOrganizer.Api.Services;
 
 // UC-05 «Зареєструвати витрату» (FR-09, FR-10, FR-15)
 // Витрату вносить Організатор події, платником може бути будь-який учасник цієї події
@@ -56,7 +56,7 @@ public static class ExpenseRegistration
     public static bool IsValidAmount(decimal amount) =>
         amount > 0m && amount <= MaxAmount && decimal.Round(amount, 2) == amount;
 
-    // Викликати під lock(gate). Повертає null при успіху або код відмови.
+    // Повертає null при успіху або код відмови.
     // При відмові колекція expenses не змінюється.
     public static string? TryAdd(
         List<Event> events,

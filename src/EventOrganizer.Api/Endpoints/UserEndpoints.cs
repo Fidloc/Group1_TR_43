@@ -1,6 +1,5 @@
 using EventOrganizer.Api.Contracts;
-using EventOrganizer.Api.Data;
-using EventOrganizer.Api.Models;
+using EventOrganizer.Api.Services.Interfaces;
 
 namespace EventOrganizer.Api.Endpoints;
 
@@ -11,41 +10,30 @@ public static class UserEndpoints
         var group = routes.MapGroup("/api/users");
 
         // Реєстрація (UC-01)
-        group.MapPost("/register", async (RegisterUserRequest request, IEventOrganizerRepository repo) =>
+        group.MapPost("/register", async (RegisterUserRequest request, IUserService userService) =>
         {
-            if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
-                return Results.BadRequest(new { error = "invalid_request", message = "Email та пароль обов'язкові" });
+            var (created, error) = await userService.RegisterAsync(request);
+            if (error is not null)
+                return ApiErrors.Result(error);
 
-            var existing = await repo.GetUserByEmailAsync(request.Email);
-            if (existing is not null)
-                return Results.Conflict(new { error = "email_already_exists", message = "Користувач з таким email вже існує" });
-
-            var newUser = new User
-            {
-                Email = request.Email,
-                PasswordHash = request.Password,
-                Name = request.Name
-            };
-
-            var created = await repo.AddUserAsync(newUser);
-            return Results.Created($"/api/users/{created.Id}", created);
+            return Results.Created($"/api/users/{created!.Id}", created);
         });
 
         // Вхід у систему (UC-02)
-        group.MapPost("/login", async (LoginRequest request, IEventOrganizerRepository repo) =>
+        group.MapPost("/login", async (LoginRequest request, IUserService userService) =>
         {
-            var user = await repo.GetUserByEmailAsync(request.Email);
-            if (user is null || user.PasswordHash != request.Password)
-                return Results.Unauthorized(); // 401 invalid_credentials
+            var (user, error) = await userService.LoginAsync(request);
+            if (error is not null)
+                return ApiErrors.Result(error);
 
-            return Results.Ok(new { message = "Вхід успішний", userId = user.Id });
+            return Results.Ok(new { message = "Вхід успішний", userId = user!.Id });
         });
 
         // Список користувачів (без паролів)
-        group.MapGet("/", async (IEventOrganizerRepository repo) =>
+        group.MapGet("/", async (IUserService userService) =>
         {
-            var users = await repo.GetAllUsersAsync();
-            return Results.Ok(users.Select(u => new UserDto(u.Id, u.Email, u.Name)).ToArray());
+            var users = await userService.GetAllUsersAsync();
+            return Results.Ok(users);
         });
 
         return group;

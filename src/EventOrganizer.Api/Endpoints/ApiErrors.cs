@@ -1,6 +1,6 @@
 using EventOrganizer.Api.Contracts;
 
-namespace EventOrganizer.Api.Infrastructure;
+namespace EventOrganizer.Api.Endpoints;
 
 public static class ApiErrors
 {
@@ -8,7 +8,8 @@ public static class ApiErrors
     {
         var (status, message) = code switch
         {
-            "email_exists" => (409, "Користувач із таким email уже зареєстрований."),
+            "email_exists" or "email_already_exists" => (409, "Користувач із таким email уже зареєстрований."),
+            "missing_credentials" => (400, "Email та пароль обов'язкові."),
             "invalid_credentials" => (401, "Невірний email або пароль."),
             "user_not_found" => (404, "Користувача не знайдено."),
             "missing_title" => (400, "Назву події обов'язково потрібно вказати."),
@@ -21,6 +22,7 @@ public static class ApiErrors
             "invalid_amount" => (400, "Сума витрати має бути числом, більшим за 0."),
             "expense_not_found" => (404, "Витрату не знайдено."),
             "no_participants_selected" => (400, "Потрібно обрати щонайменше одного учасника для розподілу."),
+            "sum_mismatch" => (400, "Сума часток не збігається із сумою витрати."),
             _ => (400, "Некоректний запит.")
         };
         return Results.Json(new ApiError(code, message), statusCode: status);
