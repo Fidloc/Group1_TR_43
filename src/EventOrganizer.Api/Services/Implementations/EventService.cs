@@ -39,9 +39,9 @@ public sealed class EventService : IEventService
         return (EventManagement.ToDetails(created, eventParticipations), null);
     }
 
-    public async Task<EventDetailsDto[]> GetEventsAsync(int? userId)
+    public async Task<EventDetailsDto[]> GetEventsAsync(int? userId, EventStatus? status = null, string? search = null)
     {
-        var events = await _eventRepository.GetEventsAsync(userId);
+        var events = await _eventRepository.GetEventsAsync(userId, status, search);
         var result = new List<EventDetailsDto>();
         foreach (var ev in events)
         {
