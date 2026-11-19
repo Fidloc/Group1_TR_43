@@ -4,9 +4,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EventOrganizer.Api.Data.Repositories;
 
-/// <summary>
-/// Реалізація сховища користувачів у SQLite через EF Core.
-/// </summary>
 public sealed class SqliteUserRepository : IUserRepository
 {
     private readonly AppDbContext _db;
