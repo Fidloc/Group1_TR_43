@@ -1,8 +1,9 @@
-﻿using EventOrganizer.Api.Contracts;
+using EventOrganizer.Api.Contracts;
 using EventOrganizer.Api.Models;
 
-namespace EventOrganizer.Api.Infrastructure;
-// UC 09 про розподіл витрат 
+namespace EventOrganizer.Api.Services;
+
+// UC-09 про розподіл витрат та розрахунок балансів (UC-06)
 public static class ExpenseCalculator
 {
     public static List<ExpenseShare> SplitEqually(

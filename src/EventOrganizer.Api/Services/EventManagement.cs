@@ -3,14 +3,14 @@ using System.Text.Json;
 using EventOrganizer.Api.Contracts;
 using EventOrganizer.Api.Models;
 
-namespace EventOrganizer.Api.Infrastructure;
+namespace EventOrganizer.Api.Services;
 
 public static class EventManagement
 {
     public const int InviteCodeLength = 8;
-    
+
     // UC-07
-    
+
     public static bool TryReadCreate(JsonElement body, out CreateEventRequest? request, out string? code)
     {
         request = null;
@@ -133,6 +133,30 @@ public static class EventManagement
         return null;
     }
 
+    // UC-08
+
+    public static string? TryUpdate(
+        Event? ev,
+        IEnumerable<Participation> participations,
+        int eventId,
+        UpdateEventRequest request,
+        DateTime today)
+    {
+        if (eventId <= 0 || request.UserId <= 0)
+            return "invalid_request";
+
+        if (ev is null)
+            return "event_not_found";
+
+        if (!ev.IsActive)
+            return "event_not_active";
+
+        if (!IsOrganizer(participations, eventId, request.UserId))
+            return "forbidden_not_organizer";
+
+        return ev.TryUpdateDetails(request.Title, request.Date, request.Place, request.Description, today);
+    }
+
     // UC-10 UC-11
 
     public static bool TryReadUserId(JsonElement body, out int userId)
@@ -158,11 +182,8 @@ public static class EventManagement
             return "event_not_found";
         if (!IsOrganizer(participations, eventId, userId))
             return "forbidden_not_organizer";
-        if (ev.Status != EventStatus.Created)
-            return "event_not_active";
 
-        ev.Status = target;
-        return null;
+        return ev.TryTransitionTo(target);
     }
 
     // UC-03

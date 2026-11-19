@@ -1,7 +1,7 @@
 using System.Text.Json;
 using EventOrganizer.Api.Contracts;
-using EventOrganizer.Api.Infrastructure;
 using EventOrganizer.Api.Models;
+using EventOrganizer.Api.Services;
 
 namespace EventOrganizer.Tests;
 
