@@ -14,7 +14,7 @@ sequenceDiagram
     participant B as BudgetRule
     participant Calc as ExpenseCalculator
     participant Repo as SqliteExpenseRepository
-    database DB as SQLite
+    participant DB as SQLite
 
     O->>P: Вводить суму, опис, платника та позначає учасників розподілу
     P->>E: POST /api/events/{eventId}/expenses (CreateExpenseRequest)
