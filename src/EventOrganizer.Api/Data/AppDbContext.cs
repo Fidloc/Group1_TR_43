@@ -41,6 +41,7 @@ public sealed class AppDbContext : DbContext
             entity.Property(e => e.Description).IsRequired();
             entity.Property(e => e.InviteCode).IsRequired();
             entity.Property(e => e.Status).HasConversion<string>().IsRequired();
+            entity.Property(e => e.BudgetLimit).HasColumnType("TEXT");
         });
 
         // Participation

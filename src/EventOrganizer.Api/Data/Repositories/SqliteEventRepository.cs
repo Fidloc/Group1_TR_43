@@ -4,9 +4,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EventOrganizer.Api.Data.Repositories;
 
-/// <summary>
-/// Реалізація сховища подій та участей у SQLite через EF Core.
-/// </summary>
 public sealed class SqliteEventRepository : IEventRepository
 {
     private readonly AppDbContext _db;
@@ -77,6 +74,7 @@ public sealed class SqliteEventRepository : IEventRepository
             existing.Place = ev.Place;
             existing.Description = ev.Description;
             existing.Status = ev.Status;
+            _db.Entry(existing).Property(e => e.BudgetLimit).CurrentValue = ev.BudgetLimit;
             await _db.SaveChangesAsync();
         }
     }

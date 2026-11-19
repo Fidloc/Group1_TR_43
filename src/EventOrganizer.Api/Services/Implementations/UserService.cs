@@ -5,9 +5,6 @@ using EventOrganizer.Api.Services.Interfaces;
 
 namespace EventOrganizer.Api.Services.Implementations;
 
-/// <summary>
-/// Координація прикладних сценаріїв облікових записів користувачів (Application Layer: UC-01, UC-02).
-/// </summary>
 public sealed class UserService : IUserService
 {
     private readonly IUserRepository _userRepository;

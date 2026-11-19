@@ -5,9 +5,6 @@ using EventOrganizer.Api.Services.Interfaces;
 
 namespace EventOrganizer.Api.Services.Implementations;
 
-/// <summary>
-/// Координація прикладних сценаріїв витрат, їх розподілу та балансів (Application Layer: UC-05, UC-06, UC-09).
-/// </summary>
 public sealed class ExpenseService : IExpenseService
 {
     private readonly IExpenseRepository _expenseRepository;
