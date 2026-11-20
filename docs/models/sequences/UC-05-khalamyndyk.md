@@ -2,7 +2,7 @@
 
 Автор: Анастасія Халаминдик (@ansstassya)
 
-Діаграма зроблена за кодом v1.0. Клієнт — `ExpenseActions.RunAsync` (src/EventOrganizer.Client/ExpenseActions.cs), веб-сторінка `Pages/Index` (`OnPostAddExpenseAsync`) надсилає такий самий запит. Сервер — маршрут `POST /api/events/{eventId}/expenses` у Program.cs і клас `ExpenseRegistration` (src/EventOrganizer.Api/Infrastructure/ExpenseRegistration.cs). Колекції `events`, `participations`, `expenses` — списки в пам'яті сервера.
+Діаграма зроблена за кодом v1.0. Клієнт — `ExpenseActions.RunAsync` (src/EventOrganizer.Client/ExpenseActions.cs), веб-сторінка `Pages/Index` надсилає такий самий запит. Сервер — маршрут `POST /api/events/{eventId}/expenses` у Program.cs і клас `ExpenseRegistration` (src/EventOrganizer.Api/Infrastructure/ExpenseRegistration.cs). Колекції `events`, `participations`, `expenses` — списки в пам'яті сервера.
 
 ```mermaid
 sequenceDiagram
@@ -56,4 +56,4 @@ sequenceDiagram
     C-->>O: облік витрат події
 ```
 
-У гілках з відмовою немає виклику `expenses.Add`, тому облік події не змінюється. Останній GET клієнт робить, щоб показати, що витрата з'явилась (AC-09) або що після відмови список такий самий (AC-10, AC-15). Після скасування (A2) клієнт нічого не надсилає і завершує дію без GET.
+У гілках з відмовою немає виклику `expenses.Add`, тому облік події не змінюється. Останній GET клієнт робить, щоб показати, що витрата з'явилась або що після відмови список такий самий. Після скасування клієнт нічого не надсилає і завершує дію без GET.
