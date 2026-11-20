@@ -1,0 +1,36 @@
+@page
+@model EventOrganizer.Api.Pages.Account.LoginModel
+@{
+    ViewData["Title"] = "Вхід";
+}
+
+<div class="auth-wrapper">
+    <div class="card auth-card">
+        <div class="page-title-box compact">
+            <h1>Вхід у систему</h1>
+        </div>
+        <p class="subtitle text-center">Увійдіть у свій обліковий запис, щоб створювати події та керувати витратами</p>
+
+        @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+        {
+            <div class="notice err">@Model.ErrorMessage</div>
+        }
+
+        <form method="post" style="margin-top: 14px;">
+            <div class="field">
+                <label asp-for="Email">Електронна пошта</label>
+                <input asp-for="Email" type="email" placeholder="name@example.com" required />
+            </div>
+            <div class="field">
+                <label asp-for="Password">Пароль</label>
+                <input asp-for="Password" type="password" placeholder="Введіть пароль" required />
+            </div>
+            <button type="submit" class="btn-primary w-full">Увійти</button>
+        </form>
+
+        <div class="auth-footer">
+            <span>Ще не маєте облікового запису?</span>
+            <a asp-page="/Account/Register" class="inline-link">Зареєструватися</a>
+        </div>
+    </div>
+</div>

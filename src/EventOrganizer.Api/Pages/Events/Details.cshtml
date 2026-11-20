@@ -1,0 +1,325 @@
+@page
+@model EventOrganizer.Api.Pages.Events.DetailsModel
+@{
+    ViewData["Title"] = Model.Event?.Title ?? "Деталі події";
+}
+
+<div class="breadcrumb-row">
+    <a asp-page="/Index" class="btn-outline-soft">← Повернутися до списку подій</a>
+</div>
+
+@if (Model.Event is null)
+{
+    <div class="card">
+        <h2>Подію не знайдено</h2>
+        <p class="subtitle">Можливо, її було видалено або передано некоректний ідентифікатор.</p>
+        <a asp-page="/Index" class="btn-primary">На головну</a>
+    </div>
+    return;
+}
+
+@{
+    var ev = Model.Event;
+    var isCreated = ev.Status == "Created";
+    var statusLabel = isCreated ? "Активна (Створена)" : (ev.Status == "Closed" ? "Закрита" : "Скасована");
+    var statusBadgeClass = isCreated ? "badge" : (ev.Status == "Closed" ? "badge closed" : "badge cancelled");
+
+    var hasBudget = ev.BudgetLimit is > 0;
+    var rawPct = hasBudget ? ev.TotalSpent * 100m / ev.BudgetLimit!.Value : 0m;
+    var barWidth = hasBudget ? Math.Min(100m, rawPct) : 0m;
+    var remaining = hasBudget ? ev.BudgetLimit!.Value - ev.TotalSpent : 0m;
+    var barClass = hasBudget && rawPct >= 80m ? "budget-bar-fill warn" : "budget-bar-fill";
+}
+
+@if (TempData["EventOk"] is string evOk && !string.IsNullOrEmpty(evOk))
+{
+    <div class="notice ok" style="margin-bottom: 16px;">@evOk</div>
+}
+@if (TempData["EventError"] is string evErr && !string.IsNullOrEmpty(evErr))
+{
+    <div class="notice err" style="margin-bottom: 16px;">@evErr</div>
+}
+
+<div class="card">
+    <div class="event-details-header">
+        <div>
+            <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:8px;">
+                <span class="@statusBadgeClass">@statusLabel</span>
+                <span class="invite-tag">Код запрошення: <b>@ev.InviteCode</b></span>
+            </div>
+            <h1 class="details-title">@ev.Title</h1>
+            <div class="event-card-meta" style="font-size: 14.5px;">
+                <span>Дата: <b>@ev.Date.ToString("dd.MM.yyyy")</b></span>
+                @if (!string.IsNullOrWhiteSpace(ev.Place))
+                {
+                    <span>• Місце: <b>@ev.Place</b></span>
+                }
+            </div>
+            @if (!string.IsNullOrWhiteSpace(ev.Description))
+            {
+                <p style="margin: 10px 0 0; color: var(--text-dark);">@ev.Description</p>
+            }
+        </div>
+
+        @if (Model.IsCurrentUserOrganizer && isCreated)
+        {
+            <div class="status-actions">
+                <form method="post" asp-page-handler="CloseEvent" asp-route-id="@ev.Id">
+                    <button type="submit" class="btn-secondary">Закрити подію</button>
+                </form>
+                <form method="post" asp-page-handler="CancelEvent" asp-route-id="@ev.Id">
+                    <button type="submit" class="btn-danger">Скасувати подію</button>
+                </form>
+            </div>
+        }
+    </div>
+
+    <div class="budget-panel">
+        @if (hasBudget)
+        {
+            <div class="budget-panel-top">
+                <div>
+                    <strong>Контроль бюджету події</strong>
+                    <div class="subtitle" style="margin: 2px 0 0;">
+                        Витрачено <b>@ev.TotalSpent.ToString("F2") грн</b> із <b>@ev.BudgetLimit!.Value.ToString("F2") грн</b>
+                        (залишок: <b>@remaining.ToString("F2") грн</b>)
+                    </div>
+                </div>
+                <div class="budget-percent @(rawPct >= 80m ? "warn" : "")">
+                    @rawPct.ToString("F1")%
+                </div>
+            </div>
+            <div class="budget-bar-track">
+                <div class="@barClass" style="width: @barWidth.ToString("F1", System.Globalization.CultureInfo.InvariantCulture)%;"></div>
+            </div>
+        }
+        else
+        {
+            <div class="budget-panel-top">
+                <div>
+                    <strong>Бюджет події</strong>
+                    <div class="subtitle" style="margin: 2px 0 0;">
+                        Сума витрат: <b>@ev.TotalSpent.ToString("F2") грн</b> • Ліміт бюджету не встановлено
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <h3 class="subsection-title">Учасники та поточний баланс</h3>
+    @if (Model.Participants.Length == 0)
+    {
+        <div class="empty-state">Учасників ще немає.</div>
+    }
+    else
+    {
+        <div class="participants-grid">
+            @foreach (var p in Model.Participants)
+            {
+                var b = Model.Balances.FirstOrDefault(x => x.ParticipationId == p.Id);
+                var paid = b?.Paid ?? 0m;
+                var owed = b?.Owed ?? 0m;
+                var bal = b?.Balance ?? 0m;
+                var isOrg = p.Role == "Organizer";
+                var balClass = bal > 0 ? "balance-pos" : (bal < 0 ? "balance-neg" : "balance-zero");
+                var balSign = bal > 0 ? $"+{bal:F2}" : $"{bal:F2}";
+
+                <div class="member-card">
+                    <div class="member-top">
+                        <span class="member-name">@p.UserName</span>
+                        <span class="badge">@(isOrg ? "Організатор" : "Учасник")</span>
+                    </div>
+                    <div class="member-stats">
+                        <span>Сплачено: <b>@paid.ToString("F2") грн</b></span>
+                        <span>Частка: <b>@owed.ToString("F2") грн</b></span>
+                    </div>
+                    <div style="font-size: 13.5px; display:flex; justify-content:space-between;">
+                        <span>Підсумковий баланс:</span>
+                        <span class="@balClass">@balSign грн</span>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<div class="grid-2">
+    <div class="card">
+        <h2>Додайте витрату</h2>
+        <p class="subtitle">Можна одразу обрати учасників для атомарного розподілу в одній транзакції</p>
+        <form method="post" asp-page-handler="AddExpense" asp-route-id="@ev.Id">
+            <div class="field">
+                <label>Хто оплатив</label>
+                <select name="payerId">
+                    <option value="0" selected>— Оберіть платника —</option>
+                    @foreach (var p in Model.Participants)
+                    {
+                        var roleLabel = p.Role == "Organizer" ? "Організатор" : "Учасник";
+                        <option value="@p.Id">@p.UserName (@roleLabel)</option>
+                    }
+                </select>
+            </div>
+            <div class="form-row">
+                <div class="field">
+                    <label>Сума витрати (грн)</label>
+                    <input type="text" name="expenseAmount" placeholder="0.00" required />
+                </div>
+                <div class="field">
+                    <label>Опис покупки</label>
+                    <input type="text" name="expenseDesc" placeholder="За що сплачено" />
+                </div>
+            </div>
+            <div class="field">
+                <label>Миттєво поділити порівну між (необов'язково)</label>
+                <div class="chips-select">
+                    @foreach (var p in Model.Participants)
+                    {
+                        <label class="chip-checkbox">
+                            <input type="checkbox" name="shareParticipantIds" value="@p.Id" />
+                            <span>@p.UserName</span>
+                        </label>
+                    }
+                </div>
+            </div>
+            <button type="submit" class="btn-primary">Додати витрату</button>
+        </form>
+
+        @if (TempData["ExpenseOk"] is string expOk && !string.IsNullOrEmpty(expOk))
+        {
+            <div class="notice ok">@expOk</div>
+        }
+        @if (TempData["ExpenseWarning"] is string expWarn && !string.IsNullOrEmpty(expWarn))
+        {
+            <div class="notice warn">@expWarn</div>
+        }
+        @if (TempData["ExpenseError"] is string expErr && !string.IsNullOrEmpty(expErr))
+        {
+            <div class="notice err">@expErr</div>
+        }
+    </div>
+
+    <div class="card">
+        <h2>Розподіліть наявну витрату</h2>
+        <p class="subtitle">Оберіть збережену витрату та залучених учасників</p>
+        <form method="post" asp-page-handler="Distribute" asp-route-id="@ev.Id">
+            <div class="field">
+                <label>Витрата для розподілу</label>
+                <select name="distExpenseId">
+                    <option value="0" selected>— Оберіть витрату —</option>
+                    @foreach (var item in Model.Expenses)
+                    {
+                        <option value="@item.Expense.Id">
+                            @item.Expense.Description — @item.Expense.Amount.ToString("F2") грн
+                        </option>
+                    }
+                </select>
+            </div>
+            <div class="field">
+                <label>Залучені учасники</label>
+                <div class="chips-select">
+                    @foreach (var p in Model.Participants)
+                    {
+                        <label class="chip-checkbox">
+                            <input type="checkbox" name="participantIds" value="@p.Id" />
+                            <span>@p.UserName</span>
+                        </label>
+                    }
+                </div>
+            </div>
+            <button type="submit" class="btn-secondary">Розподілити порівну</button>
+        </form>
+
+        @if (TempData["DistOk"] is string distOk && !string.IsNullOrEmpty(distOk))
+        {
+            <div class="notice ok">@distOk</div>
+        }
+        @if (TempData["DistError"] is string distErr && !string.IsNullOrEmpty(distErr))
+        {
+            <div class="notice err">@distErr</div>
+        }
+    </div>
+</div>
+
+@if (Model.IsCurrentUserOrganizer && isCreated)
+{
+    <div class="card" style="margin-top: 20px;">
+        <h2>Редагувати дані події</h2>
+        <p class="subtitle">Доступно лише Організатору активної події</p>
+        <form method="post" asp-page-handler="EditEvent" asp-route-id="@ev.Id">
+            <div class="grid-2">
+                <div class="field">
+                    <label>Нова назва</label>
+                    <input type="text" name="editTitle" value="@ev.Title" required />
+                </div>
+                <div class="field">
+                    <label>Нова дата</label>
+                    <input type="date" name="editDate" value="@ev.Date.ToString("yyyy-MM-dd")" required />
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="field">
+                    <label>Нове місце</label>
+                    <input type="text" name="editPlace" value="@ev.Place" />
+                </div>
+                <div class="field">
+                    <label>Новий опис</label>
+                    <input type="text" name="editDesc" value="@ev.Description" />
+                </div>
+                <div class="field">
+                    <label>Ліміт бюджету (грн, порожньо — без змін)</label>
+                    <input type="text" name="editBudget" placeholder="@(ev.BudgetLimit.HasValue ? ev.BudgetLimit.Value.ToString("F2") : "Не встановлено")" />
+                </div>
+            </div>
+            <button type="submit" class="btn-secondary" style="margin-top: 6px;">Зберегти зміни події</button>
+        </form>
+        @if (TempData["EditOk"] is string editOk && !string.IsNullOrEmpty(editOk))
+        {
+            <div class="notice ok">@editOk</div>
+        }
+        @if (TempData["EditError"] is string editErr && !string.IsNullOrEmpty(editErr))
+        {
+            <div class="notice err">@editErr</div>
+        }
+    </div>
+}
+
+<div class="card" style="margin-top: 20px;">
+    <h2>Спільні витрати події</h2>
+    <p class="subtitle">Усі зареєстровані покупки та розраховані частки кожного учасника</p>
+    <div class="expense-list">
+        @if (Model.Expenses.Length == 0)
+        {
+            <div class="empty-state">У цій події ще немає жодної витрати.</div>
+        }
+        else
+        {
+            @foreach (var item in Model.Expenses)
+            {
+                <div class="expense-item">
+                    <div class="expense-main">
+                        <span class="expense-title">@(string.IsNullOrWhiteSpace(item.Expense.Description) ? "Витрата без опису" : item.Expense.Description)</span>
+                        <span class="expense-meta">Оплатив(ла): <b>@item.PayerName</b> • @item.Expense.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</span>
+                    </div>
+                    <div class="expense-amount">@item.Expense.Amount.ToString("F2") грн</div>
+                    <div class="shares-pills">
+                        @if (item.Shares.Length == 0)
+                        {
+                            <span style="color: var(--text-muted); font-size: 13px;">
+                                Ще не розподілено між учасниками
+                            </span>
+                        }
+                        else
+                        {
+                            @foreach (var s in item.Shares)
+                            {
+                                var mName = Model.Participants.FirstOrDefault(p => p.Id == s.ParticipationId)?.UserName
+                                    ?? $"#{s.ParticipationId}";
+                                <span class="share-pill">@mName: <b>@s.Amount.ToString("F2") грн</b></span>
+                            }
+                        }
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>

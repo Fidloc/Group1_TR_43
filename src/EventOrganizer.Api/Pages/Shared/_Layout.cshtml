@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@(ViewData["Title"] is string title && !string.IsNullOrWhiteSpace(title) ? $"{title} — EventOrganizer" : "EventOrganizer — Організація спільних подій та витрат")</title>
+    <link rel="stylesheet" href="~/styles.css" asp-append-version="true" />
+</head>
+<body>
+    @{
+        var userId = Context.Session.GetInt32("UserId") ?? 0;
+        var userText = Context.Session.GetString("UserText");
+        var isLoggedIn = userId > 0 && !string.IsNullOrWhiteSpace(userText);
+    }
+
+    <div class="container">
+        @if (isLoggedIn)
+        {
+            <header class="top-nav">
+                <div class="nav-left">
+                    <a asp-page="/Index" class="brand-link">
+                        <span class="brand-logo">EventOrganizer</span>
+                        <span class="brand-tag">Спільні події, бюджет і витрати</span>
+                    </a>
+                    <nav class="nav-links" aria-label="Головна навігація">
+                        <a asp-page="/Index" class="nav-link">Події</a>
+                    </nav>
+                </div>
+
+                <div class="nav-auth">
+                    <div class="user-pill">@userText</div>
+                    <a asp-page="/Account/Logout" class="btn-outline-soft">Вийти</a>
+                </div>
+            </header>
+        }
+
+        <main role="main">
+            @RenderBody()
+        </main>
+    </div>
+</body>
+</html>
