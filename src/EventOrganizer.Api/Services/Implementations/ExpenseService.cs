@@ -21,7 +21,8 @@ public sealed class ExpenseService : IExpenseService
         _userRepository = userRepository;
     }
 
-    public async Task<(Expense? Expense, string? Error)> AddExpenseAsync(int eventId, CreateExpenseRequest request)
+    // UC-05 + US-03: перевірка бюджету і атомарне збереження витрати разом із частками
+    public async Task<(CreateExpenseResultDto? Result, string? Error)> AddExpenseAsync(int eventId, CreateExpenseRequest request)
     {
         if (eventId <= 0)
             return (null, "invalid_request");
@@ -35,8 +36,29 @@ public sealed class ExpenseService : IExpenseService
         if (error is not null)
             return (null, error);
 
-        expense = await _expenseRepository.AddExpenseAsync(expense!);
-        return (expense, null);
+        // TryAdd уже переконався, що подія існує
+        var ev = allEvents.Single(e => e.Id == eventId);
+
+        var alreadySpent = await _expenseRepository.GetTotalSpentByEventIdAsync(eventId);
+        var budgetCheck = BudgetRule.Evaluate(ev.BudgetLimit, alreadySpent, expense!.Amount);
+        if (budgetCheck.Status == BudgetCheckStatus.Rejected)
+            return (null, "budget_exceeded");
+
+        var shares = new List<ExpenseShare>();
+        var selectedIds = request.ShareParticipantIds?.Distinct().ToArray() ?? Array.Empty<int>();
+        if (selectedIds.Length > 0)
+        {
+            var validMembers = allParticipations.Select(p => p.Id).ToHashSet();
+            if (selectedIds.Any(id => !validMembers.Contains(id)))
+                return (null, "participant_not_found");
+
+            shares = ExpenseCalculator.SplitEqually(expense.Id, expense.Amount, selectedIds);
+            if (shares.Sum(s => s.Amount) != expense.Amount)
+                return (null, "sum_mismatch");
+        }
+
+        var (savedExpense, savedShares) = await _expenseRepository.AddExpenseWithSharesAsync(expense, shares);
+        return (new CreateExpenseResultDto(savedExpense, budgetCheck.WarningMessage, savedShares.ToArray()), null);
     }
 
     public async Task<(Expense[]? Expenses, string? Error)> GetExpensesByEventIdAsync(int eventId)

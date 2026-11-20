@@ -1,5 +1,6 @@
 namespace EventOrganizer.Api.Contracts;
 
+// BudgetLimit і TotalSpent дозволяють клієнту одразу показати стан бюджету (US-03)
 public sealed record EventDetailsDto(
     int Id,
     string Title,
@@ -9,4 +10,6 @@ public sealed record EventDetailsDto(
     string InviteCode,
     string Status,
     int OrganizerUserId,
-    ParticipantDto[] Participants);
+    ParticipantDto[] Participants,
+    decimal? BudgetLimit = null,
+    decimal TotalSpent = 0m);

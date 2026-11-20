@@ -40,6 +40,23 @@ public static class ExpenseRegistration
                 return false;
         }
 
+        // необов'язковий список учасників для миттєвого розподілу (Participation.Id)
+        int[]? shareIds = null;
+        if (body.TryGetProperty("shareParticipantIds", out var shares) && shares.ValueKind != JsonValueKind.Null)
+        {
+            if (shares.ValueKind != JsonValueKind.Array)
+                return false;
+
+            var ids = new List<int>();
+            foreach (var item in shares.EnumerateArray())
+            {
+                if (item.ValueKind != JsonValueKind.Number || !item.TryGetInt32(out var shareId) || shareId <= 0)
+                    return false;
+                ids.Add(shareId);
+            }
+            shareIds = ids.ToArray();
+        }
+
         code = "invalid_amount";
         if (!body.TryGetProperty("amount", out var number) ||
             number.ValueKind != JsonValueKind.Number ||
@@ -47,7 +64,7 @@ public static class ExpenseRegistration
             !IsValidAmount(amount))
             return false;
 
-        request = new CreateExpenseRequest(userId, payerId, amount, description);
+        request = new CreateExpenseRequest(userId, payerId, amount, description, shareIds);
         code = null;
         return true;
     }

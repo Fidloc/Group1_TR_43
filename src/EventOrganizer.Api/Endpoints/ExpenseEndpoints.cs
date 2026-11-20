@@ -19,11 +19,11 @@ public static class ExpenseEndpoints
             if (!ExpenseRegistration.TryRead(body, out var request, out var code))
                 return ApiErrors.Result(code!);
 
-            var (expense, error) = await expenseService.AddExpenseAsync(id, request!);
+            var (result, error) = await expenseService.AddExpenseAsync(id, request!);
             if (error is not null)
                 return ApiErrors.Result(error);
 
-            return Results.Created($"/api/events/{id}/expenses/{expense!.Id}", expense);
+            return Results.Created($"/api/events/{id}/expenses/{result!.Expense.Id}", result);
         });
 
         // Список витрат події
