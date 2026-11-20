@@ -2,9 +2,6 @@ using EventOrganizer.Api.Models;
 
 namespace EventOrganizer.Api.Data.Interfaces;
 
-/// <summary>
-/// Контракт сховища для роботи з подіями та їхніми учасниками (ISP).
-/// </summary>
 public interface IEventRepository
 {
     Task<Event?> GetEventByIdAsync(int id);

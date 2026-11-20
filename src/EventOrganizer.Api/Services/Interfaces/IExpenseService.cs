@@ -3,9 +3,6 @@ using EventOrganizer.Api.Models;
 
 namespace EventOrganizer.Api.Services.Interfaces;
 
-/// <summary>
-/// Сервіс прикладної логіки для витрат, їх розподілу та балансів (UC-05, UC-06, UC-09).
-/// </summary>
 public interface IExpenseService
 {
     Task<(Expense? Expense, string? Error)> AddExpenseAsync(int eventId, CreateExpenseRequest request);

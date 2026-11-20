@@ -4,9 +4,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EventOrganizer.Api.Data.Repositories;
 
-/// <summary>
-/// Реалізація сховища витрат та часток розподілу у SQLite через EF Core.
-/// </summary>
 public sealed class SqliteExpenseRepository : IExpenseRepository
 {
     private readonly AppDbContext _db;
@@ -26,12 +23,53 @@ public sealed class SqliteExpenseRepository : IExpenseRepository
         return await _db.Expenses.AsNoTracking().FirstOrDefaultAsync(x => x.EventId == eventId && x.Id == expenseId);
     }
 
+    public async Task<decimal> GetTotalSpentByEventIdAsync(int eventId, CancellationToken cancellationToken = default)
+    {
+        // SQLite зберігає decimal як TEXT, тому сумуємо після завантаження значень.
+        var amounts = await _db.Expenses
+            .AsNoTracking()
+            .Where(x => x.EventId == eventId)
+            .Select(x => x.Amount)
+            .ToListAsync(cancellationToken);
+
+        return amounts.Sum();
+    }
+
     public async Task<Expense> AddExpenseAsync(Expense expense)
     {
         expense.Id = 0; // Дозволяємо SQLite призначити автоінкрементний первинний ключ
         _db.Expenses.Add(expense);
         await _db.SaveChangesAsync();
         return expense;
+    }
+
+    public async Task<(Expense Expense, List<ExpenseShare> Shares)> AddExpenseWithSharesAsync(
+        Expense expense,
+        IEnumerable<ExpenseShare> shares,
+        CancellationToken cancellationToken = default)
+    {
+        await using var transaction = await _db.Database.BeginTransactionAsync(cancellationToken);
+
+        expense.Id = 0; // Дозволяємо SQLite призначити автоінкрементний первинний ключ
+        _db.Expenses.Add(expense);
+        await _db.SaveChangesAsync(cancellationToken);
+
+        var savedShares = new List<ExpenseShare>();
+        foreach (var share in shares)
+        {
+            share.Id = 0;
+            share.ExpenseId = expense.Id;
+            _db.ExpenseShares.Add(share);
+            savedShares.Add(share);
+        }
+
+        if (savedShares.Count > 0)
+        {
+            await _db.SaveChangesAsync(cancellationToken);
+        }
+
+        await transaction.CommitAsync(cancellationToken);
+        return (expense, savedShares);
     }
 
     public async Task<List<ExpenseShare>> GetSharesByExpenseIdAsync(int expenseId)

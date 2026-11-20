@@ -5,9 +5,6 @@ using EventOrganizer.Api.Services.Interfaces;
 
 namespace EventOrganizer.Api.Services.Implementations;
 
-/// <summary>
-/// Координація прикладних сценаріїв подій (Application Layer: UC-03, UC-04, UC-07, UC-08, UC-10, UC-11).
-/// </summary>
 public sealed class EventService : IEventService
 {
     private readonly IEventRepository _eventRepository;
