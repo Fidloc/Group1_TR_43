@@ -15,6 +15,13 @@ builder.Services.ConfigureHttpJsonOptions(o =>
     o.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase);
 
 builder.Services.AddRazorPages();
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(60);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
 
 var dbPath = Path.Combine(builder.Environment.ContentRootPath, "eventorganizer.db");
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -40,6 +47,7 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.UseStaticFiles();
+app.UseSession();
 
 // Middleware перехоплення некоректного JSON
 app.Use(async (context, next) =>

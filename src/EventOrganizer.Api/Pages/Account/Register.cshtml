@@ -1,0 +1,50 @@
+@page
+@model EventOrganizer.Api.Pages.Account.RegisterModel
+@{
+    ViewData["Title"] = "Реєстрація";
+}
+
+<div class="auth-wrapper">
+    <div class="card auth-card">
+        <div class="page-title-box compact">
+            <h1>Реєстрація</h1>
+        </div>
+        <p class="subtitle text-center">Створіть новий обліковий запис для організації та участі у подіях</p>
+
+        @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+        {
+            <div class="notice err">@Model.ErrorMessage</div>
+        }
+
+        @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+        {
+            <div class="notice ok">
+                @Model.SuccessMessage
+                <div style="margin-top: 10px;">
+                    <a asp-page="/Account/Login" class="btn-link-pill">Перейти до входу →</a>
+                </div>
+            </div>
+        }
+
+        <form method="post" style="margin-top: 14px;">
+            <div class="field">
+                <label asp-for="Name">Ім'я</label>
+                <input asp-for="Name" type="text" placeholder="Введіть ваше ім'я" required />
+            </div>
+            <div class="field">
+                <label asp-for="Email">Електронна пошта</label>
+                <input asp-for="Email" type="email" placeholder="name@example.com" required />
+            </div>
+            <div class="field">
+                <label asp-for="Password">Пароль</label>
+                <input asp-for="Password" type="password" placeholder="Введіть пароль" required />
+            </div>
+            <button type="submit" class="btn-primary w-full">Зареєструватися</button>
+        </form>
+
+        <div class="auth-footer">
+            <span>Вже маєте обліковий запис?</span>
+            <a asp-page="/Account/Login" class="inline-link">Увійти в систему</a>
+        </div>
+    </div>
+</div>
