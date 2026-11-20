@@ -21,26 +21,7 @@ public sealed class SqliteEventRepository : IEventRepository
         return await _db.Events.AsNoTracking().FirstOrDefaultAsync(e => e.Id == id);
     }
 
-    public async Task<List<Event>> GetEventsAsync(int? userId = null)
-    {
-        if (userId is null)
-        {
-            return await _db.Events.AsNoTracking().OrderBy(e => e.Id).ToListAsync();
-        }
-
-        var eventIds = await _db.Participations
-            .AsNoTracking()
-            .Where(p => p.UserId == userId.Value)
-            .Select(p => p.EventId)
-            .Distinct()
-            .ToListAsync();
-
-        return await _db.Events
-            .AsNoTracking()
-            .Where(e => eventIds.Contains(e.Id))
-            .OrderBy(e => e.Id)
-            .ToListAsync();
-    }public async Task<List<Event>> GetEventsAsync(int? userId = null, EventStatus? status = null, string? search = null)
+    public async Task<List<Event>> GetEventsAsync(int? userId = null, EventStatus? status = null, string? search = null)
     {
         IQueryable<Event> query = _db.Events.AsNoTracking();
 
