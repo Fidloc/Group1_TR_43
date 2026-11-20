@@ -18,25 +18,38 @@ public sealed class SqliteEventRepository : IEventRepository
         return await _db.Events.AsNoTracking().FirstOrDefaultAsync(e => e.Id == id);
     }
 
-    public async Task<List<Event>> GetEventsAsync(int? userId = null)
+    public async Task<List<Event>> GetEventsAsync(int? userId = null, EventStatus? status = null, string? search = null)
     {
-        if (userId is null)
+        IQueryable<Event> query = _db.Events.AsNoTracking();
+
+        if (userId is not null)
         {
-            return await _db.Events.AsNoTracking().OrderBy(e => e.Id).ToListAsync();
+            var eventIds = await _db.Participations
+                .AsNoTracking()
+                .Where(p => p.UserId == userId.Value)
+                .Select(p => p.EventId)
+                .Distinct()
+                .ToListAsync();
+
+            query = query.Where(e => eventIds.Contains(e.Id));
         }
 
-        var eventIds = await _db.Participations
-            .AsNoTracking()
-            .Where(p => p.UserId == userId.Value)
-            .Select(p => p.EventId)
-            .Distinct()
-            .ToListAsync();
+        if (status is not null)
+        {
+            query = query.Where(e => e.Status == status.Value);
+        }
 
-        return await _db.Events
-            .AsNoTracking()
-            .Where(e => eventIds.Contains(e.Id))
-            .OrderBy(e => e.Id)
-            .ToListAsync();
+        var events = await query.OrderBy(e => e.Id).ToListAsync();
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var trimmedSearch = search.Trim();
+            events = events
+                .Where(e => e.Title.Contains(trimmedSearch, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+
+        return events;
     }
 
     public async Task<Event> AddEventAsync(Event ev)

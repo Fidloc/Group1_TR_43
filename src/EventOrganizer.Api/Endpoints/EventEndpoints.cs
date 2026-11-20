@@ -25,10 +25,22 @@ public static class EventEndpoints
             return Results.Created($"/api/events/{created!.Id}", created);
         });
 
-        // Список подій (UC-03 / Фільтр за користувачем)
-        group.MapGet("/", async (int? userId, IEventService eventService) =>
+        // Список подій (UC-03, US-02 / Фільтр за користувачем, статусом і назвою)
+        group.MapGet("/", async (int? userId, string? status, string? search, IEventService eventService) =>
         {
-            var events = await eventService.GetEventsAsync(userId);
+            EventStatus? parsedStatus = null;
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                if (!Enum.TryParse<EventStatus>(status.Trim(), ignoreCase: true, out var statusValue) ||
+                    !Enum.IsDefined(statusValue))
+                {
+                    return ApiErrors.Result("invalid_request");
+                }
+
+                parsedStatus = statusValue;
+            }
+
+            var events = await eventService.GetEventsAsync(userId, parsedStatus, search);
             return Results.Ok(events);
         });
 
