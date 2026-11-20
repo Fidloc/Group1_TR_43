@@ -23,6 +23,8 @@ public static class ApiErrors
             "expense_not_found" => (404, "Витрату не знайдено."),
             "no_participants_selected" => (400, "Потрібно обрати щонайменше одного учасника для розподілу."),
             "sum_mismatch" => (400, "Сума часток не збігається із сумою витрати."),
+            "budget_exceeded" => (409, "Перевищено встановлений бюджет події."),
+            "invalid_budget" => (400, "Бюджет має бути додатним числом (не більше 10 000 000 грн) із точністю до копійок."),
             _ => (400, "Некоректний запит.")
         };
         return Results.Json(new ApiError(code, message), statusCode: status);

@@ -36,7 +36,17 @@ public static class EventManagement
                 DateTimeStyles.RoundtripKind, out var date))
             return false;
 
-        request = new CreateEventRequest(organizerId, title.Trim(), date, place.Trim(), description.Trim());
+        // необов'язковий бюджет: відсутній або null = без ліміту (US-03)
+        decimal? budgetLimit = null;
+        code = "invalid_budget";
+        if (body.TryGetProperty("budgetLimit", out var budgetElement) && budgetElement.ValueKind != JsonValueKind.Null)
+        {
+            if (budgetElement.ValueKind != JsonValueKind.Number || !budgetElement.TryGetDecimal(out var parsedBudget))
+                return false;
+            budgetLimit = parsedBudget;
+        }
+
+        request = new CreateEventRequest(organizerId, title.Trim(), date, place.Trim(), description.Trim(), budgetLimit);
         code = null;
         return true;
     }
@@ -72,6 +82,17 @@ public static class EventManagement
             InviteCode = NewInviteCode(events),
             Status = EventStatus.Created
         };
+
+        if (request.BudgetLimit is not null)
+        {
+            var budgetError = created.TrySetBudgetLimit(request.BudgetLimit);
+            if (budgetError is not null)
+            {
+                created = null;
+                return budgetError;
+            }
+        }
+
         organizer = new Participation
         {
             Id = NextId(participations.Select(p => p.Id)),
@@ -154,7 +175,12 @@ public static class EventManagement
         if (!IsOrganizer(participations, eventId, request.UserId))
             return "forbidden_not_organizer";
 
-        return ev.TryUpdateDetails(request.Title, request.Date, request.Place, request.Description, today);
+        var error = ev.TryUpdateDetails(request.Title, request.Date, request.Place, request.Description, today);
+        if (error is not null)
+            return error;
+
+        // null = бюджет не змінюється
+        return request.BudgetLimit is null ? null : ev.TrySetBudgetLimit(request.BudgetLimit);
     }
 
     // UC-10 UC-11
@@ -188,7 +214,7 @@ public static class EventManagement
 
     // UC-03
 
-    public static EventDetailsDto ToDetails(Event ev, IEnumerable<Participation> participations)
+    public static EventDetailsDto ToDetails(Event ev, IEnumerable<Participation> participations, decimal totalSpent = 0m)
     {
         var members = participations
             .Where(p => p.EventId == ev.Id)
@@ -199,7 +225,8 @@ public static class EventManagement
         return new EventDetailsDto(
             ev.Id, ev.Title, ev.Date, ev.Place, ev.Description, ev.InviteCode,
             ev.Status.ToString(), organizerId,
-            members.Select(ToParticipant).ToArray());
+            members.Select(ToParticipant).ToArray(),
+            ev.BudgetLimit, totalSpent);
     }
 
     public static ParticipantDto ToParticipant(Participation p) =>

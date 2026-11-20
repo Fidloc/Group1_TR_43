@@ -9,11 +9,16 @@ public sealed class EventService : IEventService
 {
     private readonly IEventRepository _eventRepository;
     private readonly IUserRepository _userRepository;
+    private readonly IExpenseRepository _expenseRepository;
 
-    public EventService(IEventRepository eventRepository, IUserRepository userRepository)
+    public EventService(
+        IEventRepository eventRepository,
+        IUserRepository userRepository,
+        IExpenseRepository expenseRepository)
     {
         _eventRepository = eventRepository;
         _userRepository = userRepository;
+        _expenseRepository = expenseRepository;
     }
 
     public async Task<(EventDetailsDto? Event, string? Error)> CreateEventAsync(CreateEventRequest request)
@@ -33,7 +38,7 @@ public sealed class EventService : IEventService
         created = await _eventRepository.AddEventWithOrganizerAsync(created!, participation!);
 
         var eventParticipations = await _eventRepository.GetParticipationsByEventIdAsync(created.Id);
-        return (EventManagement.ToDetails(created, eventParticipations), null);
+        return (EventManagement.ToDetails(created, eventParticipations, 0m), null);
     }
 
     public async Task<EventDetailsDto[]> GetEventsAsync(int? userId, EventStatus? status = null, string? search = null)
@@ -43,7 +48,8 @@ public sealed class EventService : IEventService
         foreach (var ev in events)
         {
             var participations = await _eventRepository.GetParticipationsByEventIdAsync(ev.Id);
-            result.Add(EventManagement.ToDetails(ev, participations));
+            var totalSpent = await _expenseRepository.GetTotalSpentByEventIdAsync(ev.Id);
+            result.Add(EventManagement.ToDetails(ev, participations, totalSpent));
         }
         return result.ToArray();
     }
@@ -58,7 +64,8 @@ public sealed class EventService : IEventService
             return (null, "event_not_found");
 
         var participations = await _eventRepository.GetParticipationsByEventIdAsync(ev.Id);
-        return (EventManagement.ToDetails(ev, participations), null);
+        var totalSpent = await _expenseRepository.GetTotalSpentByEventIdAsync(ev.Id);
+        return (EventManagement.ToDetails(ev, participations, totalSpent), null);
     }
 
     public async Task<(int EventId, ParticipantDto? Participant, string? Error)> JoinEventAsync(JoinEventRequest request)
@@ -90,7 +97,8 @@ public sealed class EventService : IEventService
             return (null, error);
 
         await _eventRepository.UpdateEventAsync(ev!);
-        return (EventManagement.ToDetails(ev!, participations), null);
+        var totalSpent = await _expenseRepository.GetTotalSpentByEventIdAsync(eventId);
+        return (EventManagement.ToDetails(ev!, participations, totalSpent), null);
     }
 
     public async Task<(EventDetailsDto? Event, string? Error)> ChangeStatusAsync(int eventId, int userId, EventStatus target)
@@ -111,7 +119,8 @@ public sealed class EventService : IEventService
 
         await _eventRepository.UpdateEventAsync(ev!);
         var eventParticipations = await _eventRepository.GetParticipationsByEventIdAsync(ev!.Id);
-        return (EventManagement.ToDetails(ev, eventParticipations), null);
+        var totalSpent = await _expenseRepository.GetTotalSpentByEventIdAsync(ev.Id);
+        return (EventManagement.ToDetails(ev, eventParticipations, totalSpent), null);
     }
 
     public async Task<(object[]? Participants, string? Error)> GetParticipantsAsync(int eventId)

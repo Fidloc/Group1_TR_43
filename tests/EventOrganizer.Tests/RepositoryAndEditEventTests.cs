@@ -129,7 +129,7 @@ public class RepositoryAndEditEventTests
         await using var pair = new DbLease(CreateSqliteDatabase());
         var userRepo = new SqliteUserRepository(pair.Db);
         var eventRepo = new SqliteEventRepository(pair.Db);
-        var service = new EventService(eventRepo, userRepo);
+        var service = new EventService(eventRepo, userRepo, new SqliteExpenseRepository(pair.Db));
 
         var organizer = await userRepo.AddUserAsync(new User { Email = "org@test.com", Name = "Організатор", PasswordHash = "1" });
         var (created, createErr) = await service.CreateEventAsync(
@@ -161,7 +161,7 @@ public class RepositoryAndEditEventTests
         await using var pair = new DbLease(CreateSqliteDatabase());
         var userRepo = new SqliteUserRepository(pair.Db);
         var eventRepo = new SqliteEventRepository(pair.Db);
-        var service = new EventService(eventRepo, userRepo);
+        var service = new EventService(eventRepo, userRepo, new SqliteExpenseRepository(pair.Db));
 
         var organizer = await userRepo.AddUserAsync(new User { Email = "org@test.com", Name = "Організатор", PasswordHash = "1" });
         var (created, _) = await service.CreateEventAsync(
@@ -181,7 +181,7 @@ public class RepositoryAndEditEventTests
         await using var pair = new DbLease(CreateSqliteDatabase());
         var userRepo = new SqliteUserRepository(pair.Db);
         var eventRepo = new SqliteEventRepository(pair.Db);
-        var service = new EventService(eventRepo, userRepo);
+        var service = new EventService(eventRepo, userRepo, new SqliteExpenseRepository(pair.Db));
 
         var organizer = await userRepo.AddUserAsync(new User { Email = "org@test.com", Name = "Організатор", PasswordHash = "1" });
         var (created, _) = await service.CreateEventAsync(
@@ -201,7 +201,7 @@ public class RepositoryAndEditEventTests
         await using var pair = new DbLease(CreateSqliteDatabase());
         var userRepo = new SqliteUserRepository(pair.Db);
         var eventRepo = new SqliteEventRepository(pair.Db);
-        var service = new EventService(eventRepo, userRepo);
+        var service = new EventService(eventRepo, userRepo, new SqliteExpenseRepository(pair.Db));
 
         var organizer = await userRepo.AddUserAsync(new User { Email = "org@test.com", Name = "Організатор", PasswordHash = "1" });
         var participant = await userRepo.AddUserAsync(new User { Email = "guest@test.com", Name = "Учасник", PasswordHash = "1" });
@@ -226,7 +226,7 @@ public class RepositoryAndEditEventTests
         await using var pair = new DbLease(CreateSqliteDatabase());
         var userRepo = new SqliteUserRepository(pair.Db);
         var eventRepo = new SqliteEventRepository(pair.Db);
-        var service = new EventService(eventRepo, userRepo);
+        var service = new EventService(eventRepo, userRepo, new SqliteExpenseRepository(pair.Db));
 
         var organizer = await userRepo.AddUserAsync(new User { Email = "org@test.com", Name = "Організатор", PasswordHash = "1" });
         var (created, _) = await service.CreateEventAsync(

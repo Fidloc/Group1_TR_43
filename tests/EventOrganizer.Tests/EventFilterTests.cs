@@ -28,7 +28,7 @@ public class EventFilterTests
         await using var pair = new DbLease(CreateSqliteDatabase());
         var userRepo = new SqliteUserRepository(pair.Db);
         var eventRepo = new SqliteEventRepository(pair.Db);
-        var service = new EventService(eventRepo, userRepo);
+        var service = new EventService(eventRepo, userRepo, new SqliteExpenseRepository(pair.Db));
 
         var organizer = await userRepo.AddUserAsync(new User { Email = "org@test.com", Name = "Марія", PasswordHash = "1" });
 
@@ -62,7 +62,7 @@ public class EventFilterTests
         await using var pair = new DbLease(CreateSqliteDatabase());
         var userRepo = new SqliteUserRepository(pair.Db);
         var eventRepo = new SqliteEventRepository(pair.Db);
-        var service = new EventService(eventRepo, userRepo);
+        var service = new EventService(eventRepo, userRepo, new SqliteExpenseRepository(pair.Db));
 
         var organizer = await userRepo.AddUserAsync(new User { Email = "org@test.com", Name = "Марія", PasswordHash = "1" });
 
@@ -83,7 +83,7 @@ public class EventFilterTests
         await using var pair = new DbLease(CreateSqliteDatabase());
         var userRepo = new SqliteUserRepository(pair.Db);
         var eventRepo = new SqliteEventRepository(pair.Db);
-        var service = new EventService(eventRepo, userRepo);
+        var service = new EventService(eventRepo, userRepo, new SqliteExpenseRepository(pair.Db));
 
         var user1 = await userRepo.AddUserAsync(new User { Email = "u1@test.com", Name = "Марія", PasswordHash = "1" });
         var user2 = await userRepo.AddUserAsync(new User { Email = "u2@test.com", Name = "Іван", PasswordHash = "1" });
