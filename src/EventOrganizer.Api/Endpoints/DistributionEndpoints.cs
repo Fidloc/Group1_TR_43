@@ -46,6 +46,16 @@ public static class DistributionEndpoints
             return Results.Ok(balances);
         });
 
+        // План взаєморозрахунків (UC-12 / US-04)
+        group.MapGet("/settlements", async (int eventId, IExpenseService expenseService) =>
+        {
+            var (settlements, error) = await expenseService.GetSettlementsAsync(eventId);
+            if (error is not null)
+                return ApiErrors.Result(error);
+
+            return Results.Ok(settlements);
+        });
+
         return group;
     }
 }

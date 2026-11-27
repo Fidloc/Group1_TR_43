@@ -143,4 +143,17 @@ public sealed class ExpenseService : IExpenseService
         var result = ExpenseCalculator.GetBalances(eventId, users, participations, expenses, shares);
         return (result, null);
     }
+
+    // UC-12 / US-04: план взаєморозрахунків (хто кому скільки переказує)
+    public async Task<(SettlementTransferDto[]? Settlements, string? Error)> GetSettlementsAsync(int eventId)
+    {
+        if (eventId <= 0)
+            return (null, "invalid_request");
+
+        var (balances, error) = await GetBalancesAsync(eventId);
+        if (error is not null)
+            return (null, error);
+
+        return (ExpenseCalculator.CalculateSettlements(balances!), null);
+    }
 }
