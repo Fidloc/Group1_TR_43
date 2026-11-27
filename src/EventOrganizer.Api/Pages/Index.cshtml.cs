@@ -1,13 +1,16 @@
 using System.Globalization;
-using System.Net.Http.Json;
-using System.Text.Json;
 using EventOrganizer.Api.Contracts;
+using EventOrganizer.Api.Pages.ApiFacade;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EventOrganizer.Api.Pages;
 
 public sealed class IndexModel : ApiPageModel
 {
+    private readonly IEventOrganizerApiFacade _api;
+
+    public IndexModel(IEventOrganizerApiFacade api) => _api = api;
+
     public EventDetailsDto[] Events { get; set; } = [];
 
     public string? Search { get; set; }
@@ -51,23 +54,17 @@ public sealed class IndexModel : ApiPageModel
                 : budgetLimit.Trim();
         }
 
-        using var http = CreateApiClient();
-        var response = await http.PostAsJsonAsync("/api/events", new
-        {
-            organizerUserId = CurrentUserId,
-            title = eventTitle ?? "",
-            date = eventDate ?? "",
-            place = eventPlace ?? "",
-            description = eventDescription ?? "",
-            budgetLimit = budgetValue
-        });
+        var result = await _api.CreateEventAsync(
+            CurrentUserId,
+            eventTitle ?? "",
+            eventDate ?? "",
+            eventPlace ?? "",
+            eventDescription ?? "",
+            budgetValue);
 
-        if (response.IsSuccessStatusCode)
+        if (result.IsSuccess)
         {
-            var body = await response.Content.ReadFromJsonAsync<JsonElement>();
-            var createdId = body.TryGetProperty("id", out var idProp) ? idProp.GetInt32() : 0;
-            var inviteCode = body.TryGetProperty("inviteCode", out var codeProp) ? codeProp.GetString() : "";
-
+            var (createdId, inviteCode) = result.Data;
             TempData["EventOk"] = $"Подію «{eventTitle}» створено! Код запрошення для інших учасників: {inviteCode}";
             if (createdId > 0)
                 return RedirectToPage("/Events/Details", new { id = createdId });
@@ -76,7 +73,7 @@ public sealed class IndexModel : ApiPageModel
         }
 
         CreateEventSuccess = false;
-        CreateEventMessage = await ReadApiErrorAsync(response, "Не вдалося створити подію.");
+        CreateEventMessage = result.ErrorMessage;
         await LoadEventsAsync();
         return Page();
     }
@@ -86,21 +83,13 @@ public sealed class IndexModel : ApiPageModel
         if (!IsLoggedIn)
             return RedirectToPage("/Account/Login");
 
-        using var http = CreateApiClient();
-        var response = await http.PostAsJsonAsync("/api/events/join", new
+        var result = await _api.JoinEventAsync(CurrentUserId, inviteCode ?? "");
+        if (result.IsSuccess)
         {
-            userId = CurrentUserId,
-            inviteCode = inviteCode ?? ""
-        });
-
-        if (response.IsSuccessStatusCode)
-        {
-            var location = response.Headers.Location?.ToString();
-            var lastSegment = location?.Split('/', StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
-            if (int.TryParse(lastSegment, out var joinedEventId) && joinedEventId > 0)
+            if (result.Data is > 0)
             {
                 TempData["EventOk"] = $"Ви успішно приєдналися до події за кодом «{inviteCode}»!";
-                return RedirectToPage("/Events/Details", new { id = joinedEventId });
+                return RedirectToPage("/Events/Details", new { id = result.Data.Value });
             }
 
             JoinEventSuccess = true;
@@ -110,29 +99,16 @@ public sealed class IndexModel : ApiPageModel
         }
 
         JoinEventSuccess = false;
-        JoinEventMessage = await ReadApiErrorAsync(response, "Не вдалося приєднатися до події.");
+        JoinEventMessage = result.ErrorMessage;
         await LoadEventsAsync();
         return Page();
     }
 
     private async Task LoadEventsAsync()
     {
-        using var http = CreateApiClient();
-
-        var queryParts = new List<string>();
-        if (OnlyMine && IsLoggedIn)
-            queryParts.Add($"userId={CurrentUserId}");
-
-        if (!string.IsNullOrWhiteSpace(Status))
-            queryParts.Add($"status={Uri.EscapeDataString(Status.Trim())}");
-
-        if (!string.IsNullOrWhiteSpace(Search))
-            queryParts.Add($"search={Uri.EscapeDataString(Search.Trim())}");
-
-        var url = queryParts.Count == 0
-            ? "/api/events"
-            : $"/api/events?{string.Join("&", queryParts)}";
-
-        Events = await http.GetFromJsonAsync<EventDetailsDto[]>(url) ?? [];
+        Events = await _api.GetEventsAsync(
+            OnlyMine && IsLoggedIn ? CurrentUserId : null,
+            Status,
+            Search);
     }
 }

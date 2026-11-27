@@ -1,12 +1,14 @@
-using System.Net.Http.Json;
-using System.Text.Json;
-using EventOrganizer.Api.Contracts;
+using EventOrganizer.Api.Pages.ApiFacade;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EventOrganizer.Api.Pages.Account;
 
 public sealed class LoginModel : ApiPageModel
 {
+    private readonly IEventOrganizerApiFacade _api;
+
+    public LoginModel(IEventOrganizerApiFacade api) => _api = api;
+
     [BindProperty]
     public string Email { get; set; } = "";
 
@@ -25,26 +27,16 @@ public sealed class LoginModel : ApiPageModel
 
     public async Task<IActionResult> OnPostAsync()
     {
-        using var http = CreateApiClient();
-        var response = await http.PostAsJsonAsync("/api/users/login",
-            new LoginRequest(Email ?? "", Password ?? ""));
-
-        if (!response.IsSuccessStatusCode)
+        var result = await _api.LoginAsync(Email ?? "", Password ?? "");
+        if (!result.IsSuccess || result.Data is null)
         {
-            ErrorMessage = await ReadApiErrorAsync(response, "Невірна електронна пошта або пароль.");
+            ErrorMessage = result.ErrorMessage;
             return Page();
         }
 
-        var body = await response.Content.ReadFromJsonAsync<JsonElement>();
-        var userId = body.TryGetProperty("userId", out var idProp) ? idProp.GetInt32() : 0;
-
-        var users = await http.GetFromJsonAsync<UserDto[]>("/api/users") ?? [];
-        var userObj = users.FirstOrDefault(u => u.Id == userId);
-        var displayName = !string.IsNullOrWhiteSpace(userObj?.Name) ? userObj.Name : Email;
-
-        HttpContext.Session.SetInt32("UserId", userId);
-        HttpContext.Session.SetString("UserText", $"{displayName} ({Email})");
-        TempData["DashboardOk"] = $"Ви успішно увійшли в акаунт {displayName} ({Email})!";
+        HttpContext.Session.SetInt32("UserId", result.Data.UserId);
+        HttpContext.Session.SetString("UserText", result.Data.UserText);
+        TempData["DashboardOk"] = $"Ви успішно увійшли в акаунт {result.Data.UserText}!";
 
         return RedirectToPage("/Index");
     }

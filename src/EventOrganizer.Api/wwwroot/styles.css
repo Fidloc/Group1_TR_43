@@ -833,6 +833,58 @@ button.secondary:hover,
     color: var(--text-muted);
 }
 
+.settlements-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.settlement-item {
+    background: var(--bg-chip);
+    border: 1px solid var(--border-lavender);
+    border-radius: 14px;
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.settlement-route {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 14.5px;
+}
+
+.settlement-from {
+    font-weight: 700;
+    color: var(--text-dark);
+}
+
+.settlement-arrow {
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.settlement-to {
+    font-weight: 700;
+    color: var(--primary-hover);
+}
+
+.settlement-amount {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--primary-hover);
+    background: #fff;
+    padding: 5px 11px;
+    border-radius: 10px;
+    border: 1px solid var(--border-lavender);
+    white-space: nowrap;
+}
+
 @media (max-width: 520px) {
     body {
         padding: 18px 10px 56px;

@@ -141,6 +141,28 @@
             }
         </div>
     }
+
+    <h3 class="subsection-title">План взаєморозрахунків</h3>
+    @if (Model.Settlements.Length == 0)
+    {
+        <div class="empty-state">Усі розрахунки завершено — боргів між учасниками немає.</div>
+    }
+    else
+    {
+        <div class="settlements-list">
+            @foreach (var t in Model.Settlements)
+            {
+                <div class="settlement-item">
+                    <div class="settlement-route">
+                        <span class="settlement-from">@t.FromUserName</span>
+                        <span class="settlement-arrow">→</span>
+                        <span class="settlement-to">@t.ToUserName</span>
+                    </div>
+                    <div class="settlement-amount">@t.Amount.ToString("F2") грн</div>
+                </div>
+            }
+        </div>
+    }
 </div>
 
 <div class="grid-2">

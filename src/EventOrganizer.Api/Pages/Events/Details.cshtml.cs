@@ -1,22 +1,22 @@
 using System.Globalization;
-using System.Net.Http.Json;
 using EventOrganizer.Api.Contracts;
-using EventOrganizer.Api.Models;
+using EventOrganizer.Api.Pages.ApiFacade;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EventOrganizer.Api.Pages.Events;
 
 public sealed class DetailsModel : ApiPageModel
 {
-    public record ParticipantItem(int Id, int UserId, string UserName, string Role);
+    private readonly IEventOrganizerApiFacade _api;
 
-    public record ExpenseWithShares(Expense Expense, string PayerName, ExpenseShare[] Shares);
+    public DetailsModel(IEventOrganizerApiFacade api) => _api = api;
 
     public int EventId { get; set; }
     public EventDetailsDto? Event { get; set; }
-    public ParticipantItem[] Participants { get; set; } = [];
+    public EventParticipantItem[] Participants { get; set; } = [];
     public BalanceDto[] Balances { get; set; } = [];
-    public ExpenseWithShares[] Expenses { get; set; } = [];
+    public SettlementTransferDto[] Settlements { get; set; } = [];
+    public ExpenseWithSharesItem[] Expenses { get; set; } = [];
 
     public bool IsCurrentUserOrganizer =>
         IsLoggedIn && Participants.Any(p => p.UserId == CurrentUserId && p.Role == "Organizer");
@@ -60,8 +60,7 @@ public sealed class DetailsModel : ApiPageModel
             parsedBudget = val;
         }
 
-        using var http = CreateApiClient();
-        var response = await http.PutAsJsonAsync($"/api/events/{id}", new UpdateEventRequest(
+        var result = await _api.UpdateEventAsync(id, new UpdateEventRequest(
             CurrentUserId,
             editTitle ?? "",
             editDate ?? "",
@@ -69,13 +68,13 @@ public sealed class DetailsModel : ApiPageModel
             editDesc ?? "",
             parsedBudget));
 
-        if (response.IsSuccessStatusCode)
+        if (result.IsSuccess)
         {
             TempData["EditOk"] = $"Подію «{editTitle}» успішно оновлено!";
         }
         else
         {
-            TempData["EditError"] = await ReadApiErrorAsync(response, "Не вдалося оновити подію.");
+            TempData["EditError"] = result.ErrorMessage;
         }
 
         return RedirectToPage(new { id });
@@ -96,35 +95,30 @@ public sealed class DetailsModel : ApiPageModel
             ? parsed
             : (expenseAmount ?? "");
 
-        int[]? selectedShares = shareParticipantIds is { Length: > 0 } ? shareParticipantIds : null;
+        var result = await _api.AddExpenseAsync(
+            id,
+            CurrentUserId,
+            payerId,
+            amountValue,
+            expenseDesc ?? "",
+            shareParticipantIds);
 
-        using var http = CreateApiClient();
-        var response = await http.PostAsJsonAsync($"/api/events/{id}/expenses", new
+        if (result.IsSuccess)
         {
-            userId = CurrentUserId,
-            payerParticipationId = payerId,
-            amount = amountValue,
-            description = expenseDesc ?? "",
-            shareParticipantIds = selectedShares
-        });
-
-        if (response.IsSuccessStatusCode)
-        {
-            var result = await response.Content.ReadFromJsonAsync<CreateExpenseResultDto>();
-            var sharesCount = result?.Shares?.Length ?? 0;
+            var sharesCount = result.Data?.Shares?.Length ?? 0;
 
             TempData["ExpenseOk"] = sharesCount > 0
                 ? $"Витрату «{expenseDesc}» додано та миттєво розподілено між {sharesCount} учасниками!"
                 : $"Витрату «{expenseDesc}» успішно додано!";
 
-            if (!string.IsNullOrWhiteSpace(result?.Warning))
+            if (!string.IsNullOrWhiteSpace(result.WarningMessage))
             {
-                TempData["ExpenseWarning"] = result.Warning;
+                TempData["ExpenseWarning"] = result.WarningMessage;
             }
         }
         else
         {
-            TempData["ExpenseError"] = await ReadApiErrorAsync(response, "Помилка додавання витрати.");
+            TempData["ExpenseError"] = result.ErrorMessage;
         }
 
         return RedirectToPage(new { id });
@@ -138,16 +132,10 @@ public sealed class DetailsModel : ApiPageModel
         if (!IsLoggedIn)
             return RedirectToPage("/Account/Login");
 
-        using var http = CreateApiClient();
-        var response = await http.PostAsJsonAsync(
-            $"/api/events/{id}/expenses/{distExpenseId}/distribute",
-            new DistributeExpenseRequest(CurrentUserId, participantIds ?? []));
-
-        if (response.IsSuccessStatusCode)
+        var result = await _api.DistributeExpenseAsync(id, distExpenseId, CurrentUserId, participantIds ?? []);
+        if (result.IsSuccess)
         {
-            var shares = await response.Content.ReadFromJsonAsync<ExpenseShare[]>() ?? [];
-            var participants = await http.GetFromJsonAsync<ParticipantItem[]>($"/api/events/{id}/participants") ?? [];
-
+            var (shares, participants) = result.Data;
             var summary = string.Join(", ", shares.Select(s =>
             {
                 var name = participants.FirstOrDefault(p => p.Id == s.ParticipationId)?.UserName ?? $"#{s.ParticipationId}";
@@ -158,7 +146,7 @@ public sealed class DetailsModel : ApiPageModel
         }
         else
         {
-            TempData["DistError"] = await ReadApiErrorAsync(response, "Помилка розподілу витрати.");
+            TempData["DistError"] = result.ErrorMessage;
         }
 
         return RedirectToPage(new { id });
@@ -169,16 +157,14 @@ public sealed class DetailsModel : ApiPageModel
         if (!IsLoggedIn)
             return RedirectToPage("/Account/Login");
 
-        using var http = CreateApiClient();
-        var response = await http.PostAsJsonAsync($"/api/events/{id}/{action}", new { userId = CurrentUserId });
-
-        if (response.IsSuccessStatusCode)
+        var result = await _api.ChangeEventStatusAsync(id, CurrentUserId, action);
+        if (result.IsSuccess)
         {
             TempData["EventOk"] = okMessage;
         }
         else
         {
-            TempData["EventError"] = await ReadApiErrorAsync(response, "Не вдалося змінити статус події.");
+            TempData["EventError"] = result.ErrorMessage;
         }
 
         return RedirectToPage(new { id });
@@ -186,31 +172,14 @@ public sealed class DetailsModel : ApiPageModel
 
     private async Task LoadEventDataAsync(int id)
     {
-        if (id <= 0)
+        var data = await _api.LoadEventDetailsAsync(id);
+        if (data is null)
             return;
 
-        using var http = CreateApiClient();
-        var evResponse = await http.GetAsync($"/api/events/{id}");
-        if (!evResponse.IsSuccessStatusCode)
-            return;
-
-        Event = await evResponse.Content.ReadFromJsonAsync<EventDetailsDto>();
-        if (Event is null)
-            return;
-
-        Participants = await http.GetFromJsonAsync<ParticipantItem[]>($"/api/events/{id}/participants") ?? [];
-        Balances = await http.GetFromJsonAsync<BalanceDto[]>($"/api/events/{id}/balances") ?? [];
-
-        var rawExpenses = await http.GetFromJsonAsync<Expense[]>($"/api/events/{id}/expenses") ?? [];
-        var list = new List<ExpenseWithShares>();
-        foreach (var ex in rawExpenses)
-        {
-            var shares = await http.GetFromJsonAsync<ExpenseShare[]>($"/api/events/{id}/expenses/{ex.Id}/shares") ?? [];
-            var payerName = Participants.FirstOrDefault(p => p.Id == ex.PayerParticipationId)?.UserName
-                ?? $"Учасник #{ex.PayerParticipationId}";
-            list.Add(new ExpenseWithShares(ex, payerName, shares));
-        }
-
-        Expenses = list.ToArray();
+        Event = data.Event;
+        Participants = data.Participants;
+        Balances = data.Balances;
+        Expenses = data.Expenses;
+        Settlements = await _api.GetSettlementsAsync(id);
     }
 }
