@@ -5,10 +5,6 @@ using EventOrganizer.Api.Pages.ApiFacade;
 
 namespace EventOrganizer.Tests;
 
-// Характеризаційні тести Фасаду веб-клієнта (ЛР №7, захисна сітка рефакторингу).
-// Очікувані маршрути, поля JSON і тексти помилок узято з поточних сторінок Pages,
-// щоб після переведення сторінок на Фасад їхня зовнішня поведінка не змінилася.
-// Сервер не запускається: відповіді готує FakeHttpHandler.
 public class WebApiFacadeTests
 {
     private static (EventOrganizerApiFacade Facade, FakeHttpHandler Handler) CreateFacade()
@@ -26,8 +22,6 @@ public class WebApiFacadeTests
          "inviteCode":"ABC123","status":"Active","organizerUserId":1,"participants":[],
          "budgetLimit":1000.00,"totalSpent":300.00}
         """;
-
-    // ---------- Вхід (UC-02) ----------
 
     [Fact]
     public async Task Login_Success_PostsCredentials_AndBuildsUserTextFromUserName()
@@ -92,8 +86,6 @@ public class WebApiFacadeTests
         Assert.Equal("Невірна електронна пошта або пароль.", result.ErrorMessage);
     }
 
-    // ---------- Реєстрація (UC-01) ----------
-
     [Fact]
     public async Task Register_Success_PostsNameEmailPassword()
     {
@@ -134,8 +126,6 @@ public class WebApiFacadeTests
 
         Assert.Equal("Не вдалося зареєструвати користувача.", result.ErrorMessage);
     }
-
-    // ---------- Список і фільтри подій (US-02) ----------
 
     [Fact]
     public async Task GetEvents_WithoutFilters_RequestsPlainUrl()
@@ -184,8 +174,6 @@ public class WebApiFacadeTests
 
         await Assert.ThrowsAsync<HttpRequestException>(() => facade.GetEventsAsync());
     }
-
-    // ---------- Створення події з бюджетом (UC-03, US-03) ----------
 
     [Fact]
     public async Task CreateEvent_Success_PostsAllFields_AndReturnsIdAndInviteCode()
@@ -247,9 +235,7 @@ public class WebApiFacadeTests
 
         Assert.Equal("Не вдалося створити подію.", result.ErrorMessage);
     }
-
-    // ---------- Приєднання до події (UC-04) ----------
-
+    
     [Fact]
     public async Task JoinEvent_Success_ReadsEventIdFromLocationHeader()
     {
@@ -290,8 +276,6 @@ public class WebApiFacadeTests
         Assert.False(result.IsSuccess);
         Assert.Equal("Користувач уже є учасником цієї події.", result.ErrorMessage);
     }
-
-    // ---------- Деталі події: подія, учасники, баланси, витрати й частки ----------
 
     [Fact]
     public async Task LoadEventDetails_CombinesAllRequestsIntoOneResult()
@@ -358,8 +342,6 @@ public class WebApiFacadeTests
         Assert.Null(data);
         Assert.Empty(handler.Requests);
     }
-
-    // ---------- Редагування та зміна статусу події (UC-08, UC-10, UC-11) ----------
 
     [Fact]
     public async Task UpdateEvent_Success_SendsPutWithBudget()
@@ -442,8 +424,6 @@ public class WebApiFacadeTests
 
         Assert.Equal("Не вдалося змінити статус події.", result.ErrorMessage);
     }
-
-    // ---------- Додавання витрати з бюджетом (UC-05, US-03) ----------
 
     [Fact]
     public async Task AddExpense_Success_PostsFields_AndReturnsSharesAndWarning()
@@ -537,8 +517,6 @@ public class WebApiFacadeTests
         Assert.Equal("Помилка додавання витрати.", result.ErrorMessage);
     }
 
-    // ---------- Розподіл витрати (UC-09) ----------
-
     [Fact]
     public async Task DistributeExpense_Success_PostsRequest_AndLoadsParticipants()
     {
@@ -587,8 +565,6 @@ public class WebApiFacadeTests
 
         Assert.Equal("Помилка розподілу витрати.", result.ErrorMessage);
     }
-
-    // ---------- План взаєморозрахунків (UC-12 / US-04) ----------
 
     [Fact]
     public async Task GetSettlements_Success_ReturnsTransfers()
