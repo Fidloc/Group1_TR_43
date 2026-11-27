@@ -10,4 +10,5 @@ public interface IExpenseService
     Task<(ExpenseShare[]? Shares, string? Error)> DistributeExpenseAsync(int eventId, int expenseId, DistributeExpenseRequest request);
     Task<(ExpenseShare[]? Shares, string? Error)> GetSharesAsync(int eventId, int expenseId);
     Task<(BalanceDto[]? Balances, string? Error)> GetBalancesAsync(int eventId);
+    Task<(SettlementTransferDto[]? Settlements, string? Error)> GetSettlementsAsync(int eventId);
 }

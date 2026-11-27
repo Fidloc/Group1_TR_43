@@ -65,4 +65,60 @@ public static class ExpenseCalculator
 
         return list.ToArray();
     }
+
+    // UC-12: мінімальний список переказів між боржниками і кредиторами
+    public static SettlementTransferDto[] CalculateSettlements(IEnumerable<BalanceDto> balances)
+    {
+        var list = balances.ToList();
+
+        var debtors = list
+            .Select(b => (P: b, Left: -decimal.Round(b.Balance, 2)))
+            .Where(x => x.Left > 0)
+            .ToList();
+
+        var creditors = list
+            .Select(b => (P: b, Left: decimal.Round(b.Balance, 2)))
+            .Where(x => x.Left > 0)
+            .ToList();
+
+        var result = new List<SettlementTransferDto>();
+
+        while (debtors.Count > 0 && creditors.Count > 0)
+        {
+            var di = IndexOfMax(debtors);
+            var ci = IndexOfMax(creditors);
+
+            var debtor = debtors[di];
+            var creditor = creditors[ci];
+            var amount = Math.Min(debtor.Left, creditor.Left);
+
+            result.Add(new SettlementTransferDto(
+                debtor.P.ParticipationId,
+                debtor.P.UserId,
+                debtor.P.UserName,
+                creditor.P.ParticipationId,
+                creditor.P.UserId,
+                creditor.P.UserName,
+                amount));
+
+            debtors[di] = (debtor.P, debtor.Left - amount);
+            creditors[ci] = (creditor.P, creditor.Left - amount);
+
+            if (debtors[di].Left <= 0) debtors.RemoveAt(di);
+            if (creditors[ci].Left <= 0) creditors.RemoveAt(ci);
+        }
+
+        return result.ToArray();
+    }
+
+    private static int IndexOfMax(List<(BalanceDto P, decimal Left)> items)
+    {
+        var best = 0;
+        for (int i = 1; i < items.Count; i++)
+        {
+            if (items[i].Left > items[best].Left)
+                best = i;
+        }
+        return best;
+    }
 }
