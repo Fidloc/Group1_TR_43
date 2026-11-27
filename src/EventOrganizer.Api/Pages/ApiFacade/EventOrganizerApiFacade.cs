@@ -5,12 +5,8 @@ using EventOrganizer.Api.Models;
 
 namespace EventOrganizer.Api.Pages.ApiFacade;
 
-// Реалізація Фасаду. Отримує HttpClient через конструктор (як RecordsClient у Лістингу 7.2),
-// тому її можна перевірити без запуску сервера через FakeHttpHandler.
-// Маршрути, тіла запитів і тексти помилок перенесено зі сторінок Pages без зміни поведінки.
 public sealed class EventOrganizerApiFacade : IEventOrganizerApiFacade
 {
-    // Базові повідомлення, які сторінки показували, коли сервер не повернув message
     public const string LoginFallback = "Невірна електронна пошта або пароль.";
     public const string RegisterFallback = "Не вдалося зареєструвати користувача.";
     public const string CreateEventFallback = "Не вдалося створити подію.";
@@ -113,7 +109,6 @@ public sealed class EventOrganizerApiFacade : IEventOrganizerApiFacade
         if (!response.IsSuccessStatusCode)
             return new(false, ErrorMessage: await ReadApiErrorAsync(response, JoinEventFallback));
 
-        // Ідентифікатор події береться з останнього сегмента заголовка Location
         var location = response.Headers.Location?.ToString();
         var lastSegment = location?.Split('/', StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
         int? joinedEventId = int.TryParse(lastSegment, out var id) && id > 0 ? id : null;
@@ -180,7 +175,6 @@ public sealed class EventOrganizerApiFacade : IEventOrganizerApiFacade
         string description,
         int[]? shareParticipantIds)
     {
-        // Порожній вибір учасників надсилається як null — так само, як це робила сторінка
         int[]? selectedShares = shareParticipantIds is { Length: > 0 } ? shareParticipantIds : null;
 
         using var response = await _httpClient.PostAsJsonAsync($"/api/events/{eventId}/expenses", new
@@ -233,7 +227,6 @@ public sealed class EventOrganizerApiFacade : IEventOrganizerApiFacade
         return await response.Content.ReadFromJsonAsync<SettlementTransferDto[]>() ?? [];
     }
 
-    // Читає українське повідомлення message з тіла помилки API або повертає базове повідомлення
     private static async Task<string> ReadApiErrorAsync(HttpResponseMessage response, string fallback)
     {
         try
@@ -248,7 +241,7 @@ public sealed class EventOrganizerApiFacade : IEventOrganizerApiFacade
         }
         catch
         {
-            // Ігноруємо помилку розбору тіла та повертаємо базове повідомлення
+        
         }
 
         return fallback;
