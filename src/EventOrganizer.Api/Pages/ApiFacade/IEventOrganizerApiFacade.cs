@@ -3,8 +3,6 @@ using EventOrganizer.Api.Models;
 
 namespace EventOrganizer.Api.Pages.ApiFacade;
 
-// Фасад (GoF, структурний шаблон): спрощений інтерфейс сторінок Razor Pages до REST API.
-// Сторінки викликають одну операцію, а фасад формує запит, надсилає його та обробляє відповідь.
 public interface IEventOrganizerApiFacade
 {
     Task<ApiCallResult<LoginResult>> LoginAsync(string email, string password);
