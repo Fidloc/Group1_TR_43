@@ -221,6 +221,18 @@ public sealed class EventOrganizerApiFacade : IEventOrganizerApiFacade
         return new(true, (shares, participants));
     }
 
+    public async Task<SettlementTransferDto[]> GetSettlementsAsync(int eventId)
+    {
+        if (eventId <= 0)
+            return [];
+
+        using var response = await _httpClient.GetAsync($"/api/events/{eventId}/settlements");
+        if (!response.IsSuccessStatusCode)
+            return [];
+
+        return await response.Content.ReadFromJsonAsync<SettlementTransferDto[]>() ?? [];
+    }
+
     // Читає українське повідомлення message з тіла помилки API або повертає базове повідомлення
     private static async Task<string> ReadApiErrorAsync(HttpResponseMessage response, string fallback)
     {

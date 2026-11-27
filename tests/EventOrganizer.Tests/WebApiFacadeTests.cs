@@ -587,4 +587,58 @@ public class WebApiFacadeTests
 
         Assert.Equal("Помилка розподілу витрати.", result.ErrorMessage);
     }
+
+    // ---------- План взаєморозрахунків (UC-12 / US-04) ----------
+
+    [Fact]
+    public async Task GetSettlements_Success_ReturnsTransfers()
+    {
+        var (facade, handler) = CreateFacade();
+        handler.When(HttpMethod.Get, "/api/events/3/settlements", HttpStatusCode.OK,
+            """[{"fromParticipationId":11,"fromUserId":2,"fromUserName":"Іван","toParticipationId":10,"toUserId":1,"toUserName":"Маргарита","amount":150.00}]""");
+
+        var result = await facade.GetSettlementsAsync(3);
+
+        var transfer = Assert.Single(result);
+        Assert.Equal("Іван", transfer.FromUserName);
+        Assert.Equal("Маргарита", transfer.ToUserName);
+        Assert.Equal(150.00m, transfer.Amount);
+        Assert.Equal(HttpMethod.Get, handler.RequestMethod);
+        Assert.Equal("/api/events/3/settlements", handler.RequestUri!.AbsolutePath);
+    }
+
+    [Fact]
+    public async Task GetSettlements_EmptyList_ReturnsEmptyArray()
+    {
+        var (facade, handler) = CreateFacade();
+        handler.When(HttpMethod.Get, "/api/events/3/settlements", HttpStatusCode.OK, "[]");
+
+        var result = await facade.GetSettlementsAsync(3);
+
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public async Task GetSettlements_404_ReturnsEmptyArray()
+    {
+        var (facade, handler) = CreateFacade();
+        handler.When(HttpMethod.Get, "/api/events/99/settlements", HttpStatusCode.NotFound);
+
+        var result = await facade.GetSettlementsAsync(99);
+
+        Assert.Empty(result);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-2)]
+    public async Task GetSettlements_InvalidId_ReturnsEmptyWithoutRequest(int eventId)
+    {
+        var (facade, handler) = CreateFacade();
+
+        var result = await facade.GetSettlementsAsync(eventId);
+
+        Assert.Empty(result);
+        Assert.Empty(handler.Requests);
+    }
 }

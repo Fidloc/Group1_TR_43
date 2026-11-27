@@ -42,4 +42,6 @@ public interface IEventOrganizerApiFacade
         int expenseId,
         int organizerUserId,
         int[] participantIds);
+
+    Task<SettlementTransferDto[]> GetSettlementsAsync(int eventId);
 }

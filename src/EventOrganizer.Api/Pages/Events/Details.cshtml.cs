@@ -15,6 +15,7 @@ public sealed class DetailsModel : ApiPageModel
     public EventDetailsDto? Event { get; set; }
     public EventParticipantItem[] Participants { get; set; } = [];
     public BalanceDto[] Balances { get; set; } = [];
+    public SettlementTransferDto[] Settlements { get; set; } = [];
     public ExpenseWithSharesItem[] Expenses { get; set; } = [];
 
     public bool IsCurrentUserOrganizer =>
@@ -179,5 +180,6 @@ public sealed class DetailsModel : ApiPageModel
         Participants = data.Participants;
         Balances = data.Balances;
         Expenses = data.Expenses;
+        Settlements = await _api.GetSettlementsAsync(id);
     }
 }
