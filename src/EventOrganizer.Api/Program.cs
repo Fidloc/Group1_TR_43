@@ -4,6 +4,7 @@ using EventOrganizer.Api.Data;
 using EventOrganizer.Api.Data.Interfaces;
 using EventOrganizer.Api.Data.Repositories;
 using EventOrganizer.Api.Endpoints;
+using EventOrganizer.Api.Pages.ApiFacade;
 using EventOrganizer.Api.Services.Implementations;
 using EventOrganizer.Api.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -21,6 +22,15 @@ builder.Services.AddSession(options =>
     options.IdleTimeout = TimeSpan.FromMinutes(60);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
+});
+
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddHttpClient<IEventOrganizerApiFacade, EventOrganizerApiFacade>((sp, client) =>
+{
+    var httpContext = sp.GetRequiredService<IHttpContextAccessor>().HttpContext;
+    client.BaseAddress = httpContext is not null
+        ? new Uri($"{httpContext.Request.Scheme}://{httpContext.Request.Host}")
+        : new Uri("http://localhost:5076");
 });
 
 var dbPath = Path.Combine(builder.Environment.ContentRootPath, "eventorganizer.db");

@@ -1,11 +1,14 @@
-using System.Net.Http.Json;
-using EventOrganizer.Api.Contracts;
+using EventOrganizer.Api.Pages.ApiFacade;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EventOrganizer.Api.Pages.Account;
 
 public sealed class RegisterModel : ApiPageModel
 {
+    private readonly IEventOrganizerApiFacade _api;
+
+    public RegisterModel(IEventOrganizerApiFacade api) => _api = api;
+
     [BindProperty]
     public string Name { get; set; } = "";
 
@@ -28,11 +31,8 @@ public sealed class RegisterModel : ApiPageModel
 
     public async Task<IActionResult> OnPostAsync()
     {
-        using var http = CreateApiClient();
-        var response = await http.PostAsJsonAsync("/api/users/register",
-            new RegisterUserRequest(Email ?? "", Password ?? "", Name ?? ""));
-
-        if (response.IsSuccessStatusCode)
+        var result = await _api.RegisterAsync(Name ?? "", Email ?? "", Password ?? "");
+        if (result.IsSuccess)
         {
             SuccessMessage = $"Користувача «{Name}» ({Email}) успішно зареєстровано!";
             Name = "";
@@ -41,7 +41,7 @@ public sealed class RegisterModel : ApiPageModel
             return Page();
         }
 
-        ErrorMessage = await ReadApiErrorAsync(response, "Не вдалося зареєструвати користувача.");
+        ErrorMessage = result.ErrorMessage;
         return Page();
     }
 }
