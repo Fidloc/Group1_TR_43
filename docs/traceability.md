@@ -2,7 +2,7 @@
 
 Матриця з ЛР №3 (вимоги, use cases, критерії приймання, моделі) доповнена для ЛР №4: для кожної вимоги вказано компонент, яким вона реалізована, як її перевіряли і що вийшло.
 
-Діаграми Use Case, класів і станів є в [design.md](design.md), діаграми діяльності в [model/](../model/), діаграми послідовності в [models/sequences/](models/sequences/). Протоколи перевірок: [UC-02](tests/UC-02-protocol.md), [UC-05](tests/UC-05-protocol.md), [UC-07](tests/UC-07-protocol.md), [UC-09](tests/UC-09-protocol.md). Автотести в [tests/EventOrganizer.Tests](../tests/EventOrganizer.Tests/), `dotnet test` дає 38/38 (разом із порожнім `UnitTest1`). UC-05 злито через PR #10 (перевірку Організатора — через PR #13), решту сценаріїв через PR #11, цю матрицю — через PR #12.
+Діаграми Use Case, класів і станів є в [design.md](design.md), діаграми діяльності в [model/](../model/), діаграми послідовності в [models/sequences/](models/sequences/). Протоколи перевірок: [UC-02](tests/UC-02-protocol.md), [UC-05](tests/UC-05-protocol.md), [UC-07](tests/UC-07-protocol.md), [UC-09](tests/UC-09-protocol.md). Автотести в [tests/EventOrganizer.Tests](../tests/EventOrganizer.Tests/), `dotnet test` дає 156/156 (разом із порожнім `UnitTest1`). UC-05 злито через PR #10 (перевірку Організатора — через PR #13), решту сценаріїв через PR #11, цю матрицю — через PR #12.
 
 | Вимога | Use Case | Критерій приймання | Проєктний артефакт | Компонент | Перевірка | Фактичний результат |
 |---|---|---|---|---|---|---|
@@ -21,6 +21,7 @@
 | **FR-13** Закрити подію | UC-10 | **AC-13** Після закриття подія має стан «Закрита» | Use Case; Class (`Event.Status`); State Machine `Event` | `EventManagement` | Протокол UC-07, кроки 9–10 (лише вручну) | Не-організатор → 403 `forbidden_not_organizer`; організатор → 200, `Closed` |
 | **FR-14** Скасувати подію | UC-11 | **AC-14** Після скасування подія має стан «Скасована» | Use Case; Class (`Event.Status`); State Machine `Event` | `EventManagement` | Протокол UC-07, кроки 12–13 (лише вручну) | 200, `Cancelled`; повторне скасування → 409 `event_not_active` |
 | **FR-15** Відхиляти дії над закритою чи скасованою подією | UC-04, UC-05, UC-09 | **AC-15** Дію не виконано (409 `event_not_active`), дані не змінено | Class (`Event.Status`); State Machine `Event` | `EventManagement`, `ExpenseRegistration`, маршрут `distribute` | `ExpenseRegistrationTests` (`InactiveEvent_IsRejected_AndNothingSaved`); протоколи UC-07 (крок 11), UC-05 (рядок AC-15), UC-09 (рядок AC-15) | Приєднання, витрата і розподіл у закритій події → 409 `event_not_active`; учасників, витрат і часток не додано |
+| **FR-19** Показати план взаєморозрахунків (перекази між учасниками) | UC-12 | **AC-19** Перелік переказів покриває всі борги й кредити з точністю до 0,01 грн | Use Case; [Implementation Model](models/implementation.md); [Sprint 3](sprints/s3.md) | `DistributionEndpoints` (`GET .../settlements`), `ExpenseService.GetSettlementsAsync`, `ExpenseCalculator.CalculateSettlements`, `EventOrganizerApiFacade.GetSettlementsAsync`, `Pages/Events/Details` | `SettlementTests` (юніт- та інтеграційні тести `SQLite :memory:`); `WebApiFacadeTests` (`FakeHttpHandler`) | Тести 156/156. Для балансів +300, −100, −200 формуються 2 перекази (100.00 і 200.00 грн); нульові баланси → порожній список; неіснуюча подія → 404 |
 | **NFR-01** Час відповіді сервера ≤ 1 с | Усі реалізовані UC | Відповідь API в навчальному середовищі швидша за 1 с | [design.md](design.md) | Колекції в пам'яті сервера (`Program.cs`) | Ручні запити з протоколів; запуск `dotnet test` | Усі відповіді приходили одразу; `ExpenseRegistrationTests` виконано за 0,5 с. окремо навантаження не тестували |
 | **NFR-02** Точність обчислень до 0,01 грн | UC-05, UC-09 | Сума часток дорівнює сумі витрати з точністю до 0,01 грн | [Activity UC-05](../model/activity-uc-05.md), [Activity UC-09](../model/activity-uc-09.md) | Тип `decimal`; `ExpenseCalculator.SplitEqually`; `ExpenseRegistration.IsValidAmount` | `ExpenseDistributionTests` (`SplitEqually_ShouldMatchExpenseTotalAmount`: 100/3, 10/7, 0.01/2); `ExpenseRegistrationTests` (`InvalidAmount_IsRejected_AndNothingSaved`: 10.005) | Суми часток точно дорівнюють сумі витрати; суму з трьома знаками після коми відхилено |
 
@@ -29,6 +30,8 @@
 Реалізовано у v1.0: FR-01 – FR-05, FR-07 – FR-15, NFR-01, NFR-02.
 Не реалізовано: FR-06 (редагування події, UC-08), перенесли на наступну версію.
 FR-05, FR-07, FR-08, FR-13, FR-14 перевірені тільки вручну, автотестів на них поки немає.
+
+Реалізовано у v2.0: всі функціональні вимоги **FR-01 – FR-19**, зокрема перенесене з v1.0 редагування події, контроль бюджету й атомарне збереження витрат у транзакції, пошук і фільтрацію подій, а також план взаєморозрахунків між учасниками. Забезпечено персистентне зберігання даних у SQLite і покрито ключові сценарії набором із **156 автоматизованих тестів**.
 
 ## Перевірка одного зв'язку
 
