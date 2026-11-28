@@ -12,7 +12,7 @@
 
 ---
 
-## 2. Діаграма класів фактичної реалізації
+## 2. Діаграма класів фактичної реалізації (Mermaid)
 
 ```mermaid
 classDiagram
@@ -21,29 +21,30 @@ classDiagram
     namespace RazorPagesUI {
         class ApiPageModel {
             <<abstract>>
-            #CurrentUserId int?
-            #CurrentUserText string?
+            #CurrentUserId int
+            #CurrentUserText string
+            #IsLoggedIn bool
         }
         class LoginModel {
-            -IEventOrganizerApiFacade _apiFacade
+            -IEventOrganizerApiFacade _api
             +OnPostAsync() Task~IActionResult~
         }
         class RegisterModel {
-            -IEventOrganizerApiFacade _apiFacade
+            -IEventOrganizerApiFacade _api
             +OnPostAsync() Task~IActionResult~
         }
         class IndexModel {
-            -IEventOrganizerApiFacade _apiFacade
-            +OnGetAsync() Task
+            -IEventOrganizerApiFacade _api
+            +OnGetAsync() Task~IActionResult~
             +OnPostCreateEventAsync() Task~IActionResult~
             +OnPostJoinEventAsync() Task~IActionResult~
         }
         class DetailsModel {
-            -IEventOrganizerApiFacade _apiFacade
+            -IEventOrganizerApiFacade _api
             +SettlementTransferDto[] Settlements
             +OnGetAsync(id) Task~IActionResult~
             +OnPostAddExpenseAsync(id) Task~IActionResult~
-            +OnPostDistributeExpenseAsync(id, expenseId) Task~IActionResult~
+            +OnPostDistributeAsync(id, expenseId) Task~IActionResult~
         }
     }
 
@@ -91,8 +92,10 @@ classDiagram
         }
         class SettlementTransferDto {
             +int FromParticipationId
+            +int FromUserId
             +string FromUserName
             +int ToParticipationId
+            +int ToUserId
             +string ToUserName
             +decimal Amount
         }
