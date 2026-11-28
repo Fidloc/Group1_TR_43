@@ -3,8 +3,6 @@ using System.Text;
 
 namespace EventOrganizer.Tests;
 
-// Тестовий замінник HTTP-обробника (за Лістингом 7.4 методички ЛР №7).
-// Не звертається до сервера: запам'ятовує запити й повертає підготовлені відповіді за маршрутом.
 public sealed class FakeHttpHandler : HttpMessageHandler
 {
     public sealed record RecordedRequest(HttpMethod Method, Uri Uri, string? Body);
@@ -13,15 +11,12 @@ public sealed class FakeHttpHandler : HttpMessageHandler
 
     private readonly List<Route> _routes = [];
 
-    // Усі отримані запити в порядку надсилання
     public List<RecordedRequest> Requests { get; } = [];
 
-    // Властивості останнього запиту (як у Лістингу 7.4)
     public HttpMethod? RequestMethod => Requests.LastOrDefault()?.Method;
     public Uri? RequestUri => Requests.LastOrDefault()?.Uri;
     public string? RequestBody => Requests.LastOrDefault()?.Body;
 
-    // Підготувати відповідь для методу та шляху (без query-рядка)
     public FakeHttpHandler When(
         HttpMethod method,
         string path,
