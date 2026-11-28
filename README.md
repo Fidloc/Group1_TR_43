@@ -55,7 +55,7 @@ dotnet ef database update --project src/EventOrganizer.Api
 
 1. **Клонуйте репозиторій та зберіть рішення:**
    ```bash
-   git clone [https://github.com/Fidloc/Group1_TR_43.git](https://github.com/Fidloc/Group1_TR_43.git)
+   git clone https://github.com/Fidloc/Group1_TR_43.git
    cd Group1_TR_43
    dotnet build
    ```
